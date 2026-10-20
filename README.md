@@ -1,70 +1,169 @@
-# SupportLab
+# SupportLab · Mô phỏng IT Support
 
-Web simulator for exploring PC configuration, Windows installation and IT Support troubleshooting. Next.js App Router, TypeScript, Tailwind, Lucide and Zustand.
+Nền tảng Web mô phỏng cài đặt hệ thống và xử lý sự cố CNTT, tích hợp trợ lý AI tùy chọn. Đây là bản mẫu nghiên cứu phục vụ định hướng khóa luận, tập trung vào cài Windows và xử lý sự cố mạng cơ bản.
 
-## Run
+Người dùng tự thay đổi cấu hình và quan sát kết quả trên máy tính mô phỏng. Ứng dụng không tổ chức bài tập, chấm điểm hay tự động sửa lỗi.
+
+![Giao diện tổng quan máy tính mô phỏng SupportLab](docs/images/tong-quan.png)
+
+> Đây là mô phỏng bằng trạng thái phần mềm, không phải máy ảo chạy Windows thật. Các thao tác không thay đổi BIOS, ổ đĩa, USB hoặc mạng của máy đang mở trình duyệt.
+
+## Chức năng hiện có
+
+| Thành phần | Nội dung |
+| --- | --- |
+| Máy tính mô phỏng | Máy có Windows hoặc máy trống; bật, tắt, khởi động lại và tạo phiên mới. |
+| BIOS / UEFI | Secure Boot, TPM, UEFI/Legacy, Intel VMD và thứ tự khởi động. |
+| Menu boot | Chọn USB hoặc SSD cho một lần khởi động, không đổi thứ tự boot đã lưu. |
+| Cài Windows | Nhận SSD theo trạng thái bộ điều khiển, chuẩn bị GPT/phân vùng và cài Windows mô phỏng. |
+| Driver lưu trữ | Mô phỏng tải, giải nén, chép USB, duyệt thư mục và nạp driver tương thích. |
+| Mạng và CMD | Chỉnh IP, gateway, DNS, DHCP; kiểm tra bằng các lệnh mô phỏng. |
+| Hướng dẫn làm cùng | Gợi ý theo trạng thái hiện tại, chỉ vị trí thao tác và giải thích lý do. |
+| Sổ tay kỹ thuật | Tham khảo cài Windows cho Dell, ASUS, HP và PC tự ráp. |
+| Trợ lý kỹ thuật | Giải thích cục bộ hoặc kết nối OpenAI khi được cấu hình. |
+
+## Công nghệ
+
+Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide React, Zustand và Zod. Kiểm thử bằng Node.js Test Runner qua `tsx` và Playwright.
+
+## Cài đặt và chạy
+
+Yêu cầu **Node.js 20.9 trở lên**, npm và Git nếu tải bằng lệnh clone.
 
 ```sh
+git clone https://github.com/phanduyan134-coder/MoPhongITSUPPORT.git
+cd MoPhongITSUPPORT
 npm install
 npm run dev
 ```
 
-Open the Local URL printed in the terminal, normally http://127.0.0.1:3000. Next.js uses another available port if 3000 is occupied. Requires Node.js 20.9 or newer.
+Mở địa chỉ Local được in trong terminal, thường là **http://127.0.0.1:3000**. Next.js sẽ chọn cổng khác nếu cổng đó đã được dùng.
 
-Development uses `.next-dev`, production builds use `.next`, and browser tests use `.next-e2e` so their generated files do not overwrite each other.
+`npm install` cài thư viện; những lần chạy sau thường chỉ cần `npm run dev`. Không cần API key để sử dụng mô phỏng và hướng dẫn cục bộ.
 
-## Simulator
+Chạy bản tối ưu:
 
-- Start with a healthy Windows installation, or create a blank PC that is powered off with an empty SSD and no installation USB attached.
-- Switch between the desktop, BIOS, Windows installer, network configuration and simulated CMD views.
-- Attach or detach the Windows installation USB, power the PC on or off, and restart it.
-- Select a device from the one-time boot menu without changing the BIOS boot order.
-- Change Secure Boot, TPM, UEFI/Legacy, VMD and storage-driver settings, prepare GPT partitions and install Windows on the simulated SSD.
-- Prepare a simulated driver package through download, extraction and USB copy, then browse the virtual USB and select a compatible storage controller in Windows Setup.
-- Change the client's IP address, gateway and DNS, or the router's DHCP service, then observe the effects through simulated CMD commands.
+```sh
+npm run build
+npm start
+```
 
-The simulator is open ended: you choose the configuration and operations, and the shared state determines the resulting behavior. The Zustand store contains firmware, disk, network, USB and power state together with session data and an action log. Network behavior and boot results are derived in `src/lib/engine.ts`. Starting a new session clears the simulated PC, action history and chat after confirmation. Refreshing clears session data.
+Môi trường phát triển dùng `.next-dev`, bản build dùng `.next`, kiểm thử trình duyệt dùng `.next-e2e` để tránh ghi đè kết quả.
 
-## Guided Windows installation
+## Hình ảnh giao diện
 
-Choose "Huong dan" ("Hướng dẫn làm cùng") in the simulator header for optional, state-aware guidance through the current Windows installation simulation. The guide observes the PC rather than advancing through manually checked tasks: USB, UEFI/Secure Boot/TPM, one-time USB boot, driver preparation and selection when VMD hides the SSD, GPT preparation, installation, SSD boot and USB removal. Changing an earlier setting or restarting Setup updates the recommendation accordingly.
+Ảnh chụp trực tiếp từ bản mẫu, không phải giao diện BIOS thật của từng model.
 
-"Chỉ vị trí thao tác" opens the appropriate view or boot menu and focuses the relevant control, but does not operate the PC. You perform each action yourself and can close the guide at any point. "Vì sao cần bước này?" explains the technical reason and real-device caveats. The guide works locally without an AI key; it is separate from the optional technical assistant.
+### BIOS / UEFI
 
-An existing Windows installation is not treated as a completed guided installation. Choose to reinstall on the current PC, or create a blank PC through the existing new-session confirmation. Enabling guidance never formats or resets the PC. Disk preparation still requires explicit confirmation. A new session resets installation intent while preserving whether guidance is enabled. The separate handbook remains the reference for procedures beyond what is simulated; guidance does not add real Windows setup, OOBE or model-specific firmware.
+Cấu hình firmware tổng quát và quan sát ảnh hưởng tới khởi động, nhận SSD và cài đặt.
 
-## Storage driver preparation
+![Các thiết lập bảo mật, bộ điều khiển và thứ tự boot](docs/images/bios-uefi.png)
 
-Open "Chuẩn bị driver" in the simulator controls. The dialog contains a real-device reference procedure and a separate simulated support-PC workspace. The reference explains how to identify the exact model or Service Tag/Product Number, CPU, storage controller, Windows version and architecture; find the official package; extract it as the manufacturer directs; and copy the matching `.inf`, `.sys` and `.cat` files with their folder structure. If the target PC has no working OS or Internet, use another working online PC. Create the bootable Windows USB before copying the driver folder to `Drivers/Storage`, or use a second readable USB. Creating or formatting the USB again erases the copied files. The USB stores files for Setup to read; a driver is not installed onto the USB.
+### Chuẩn bị driver
 
-The ASUS, Dell, HP and motherboard choices open existing official support portals. They do not find a package automatically, validate a model or change the simulated hardware. Section names such as chipset, storage, SATA, RAID or IRST vary by vendor. A matching storage-controller driver may be needed when firmware sees the SSD but Windows Setup cannot; it is not required for every SSD, ASUS device or Intel platform. AMD and ARM devices require their own supported packages and procedures. An EXE package needs the manufacturer's documented extraction method, not an invented universal command or execution from the Load driver screen.
+Hướng dẫn máy thật được tách biệt với các gói driver mẫu trong mô phỏng.
 
-For the simulated Intel VMD x64 PC:
+![Hướng dẫn tải, giải nén và chép driver vào USB](docs/images/chuan-bi-driver.png)
 
-1. Select "Gói Intel VMD x64" and choose "Tải gói mô phỏng", then "Giải nén gói".
-2. Connect the simulated installation USB and choose "Chép vào USB". An unextracted package cannot be copied through this workflow.
-3. With Windows Setup running and the SSD hidden, choose "Nạp driver Intel VMD", then "Browse". Select `E:\Drivers\Storage`, confirm the folder and select "Intel VMD Controller (x64)".
-4. Choose "Nạp driver" to make the simulated SSD visible, then continue disk preparation and installation. Loading the driver does not format the SSD.
+### Cấu hình mạng
 
-The Ethernet sample is incompatible with the storage controller; revealing incompatible entries does not allow loading it. The virtual browser only searches the selected folder and does not recurse into subfolders. Its drive letter `E:` and all filenames, including `vmd-controller.inf`, are illustrative rather than verified vendor filenames or a required path on a real PC. The simulator uses fixed package identifiers for compatibility, not INF parsing, hardware IDs or digital-signature checks. Downloads, extraction and USB copy update local state only: no real package is fetched, archive unpacked, USB accessed or driver executed. Opening an official support link is a separate browser action.
+Chỉnh IPv4 và dịch vụ DHCP trên router, sau đó kiểm tra bằng CMD mô phỏng.
 
-Copied packages remain on the virtual USB when it is disconnected. A driver loaded into Setup is temporary and must be loaded again after restarting Setup; a storage driver included by a successful simulated Windows installation is tracked separately. A new session or page refresh clears the simulated packages and support workspace. Wi-Fi/LAN drivers for Windows or its initial setup are separate from storage drivers and are not installed by this feature. These instructions and portals do not establish model-specific verification; check the exact device documentation before applying them to hardware.
+![Cấu hình IP, gateway, DNS và DHCP](docs/images/cau-hinh-mang.png)
 
-## Network troubleshooting guidance
+### Sổ tay cài Windows
 
-In "Hướng dẫn làm cùng", choose "Kiểm tra và xử lý mạng". The guide first asks for `ipconfig /all`, then explains IP, gateway, DNS or DHCP problems in the current virtual PC. With valid settings, it walks through router reachability (`ping 192.168.1.1`), the internal server (`ping 192.168.1.10`), an external IP (`ping 8.8.8.8`) and name resolution (`nslookup example.com`). These are local simulated commands, not real probes.
+Chọn nhóm thiết bị và mục tiêu cài đặt để xem quy trình cùng cảnh báo.
 
-"Chỉ vị trí thao tác" focuses CMD, the affected network setting or the router DHCP switch without executing a command or applying a configuration. Editing a network field is only a draft until "Áp dụng cấu hình" is selected. Old observations are discarded when network settings, DHCP availability or power changes, after a reboot, or when a new session starts. The terminal retains its prior results as history, but they do not validate the new configuration. Switching guide content preserves the PC and the Windows guide's installation intent.
+![Sổ tay cài Windows theo thiết bị](docs/images/so-tay.png)
 
-DHCP recovery distinguishes a stopped server, an unusable client address and an existing lease that still works. Restarting DHCP does not silently renew the client; `ipconfig /renew` is a separate user action. A PC without Windows offers a switch to installation guidance rather than fabricating network checks. No fault injection, assignments, scoring or automatic repair is added. The fixed network model and its limits still apply; this does not simulate physical cabling or Wi-Fi.
+## Sử dụng mô phỏng
 
-## AI support
+### Cài Windows có hướng dẫn
 
-Local technical explanations work without credentials. To enable the OpenAI read-only tool loop, create `.env.local` using `.env.example` as the template, set `SUPPORTLAB_AI_ENABLED=true`, supply `OPENAI_API_KEY` and an accessible Responses-compatible `OPENAI_MODEL`, then restart the server. `OPENAI_BASE_URL` defaults to `https://api.openai.com/v1`. No model is selected automatically.
+1. Chọn **Tạo phiên mới**, chọn máy trống và xác nhận.
+2. Bật **Hướng dẫn**, chọn **Cài Windows từ USB**.
+3. Thực hiện gợi ý: cắm USB, vào BIOS, cấu hình firmware và boot USB.
+4. Nếu VMD khiến bộ cài chưa nhận SSD, chuẩn bị và nạp driver mẫu.
+5. Xác nhận chuẩn bị GPT/phân vùng khi muốn xóa ổ mô phỏng, rồi cài Windows.
+6. Boot từ SSD và rút USB sau khi Windows mô phỏng đã chạy.
 
-The technical assistant explains the current configuration, the effects of operations and possible causes of problems. The server validates snapshots with Zod. Its two tools inspect the virtual PC and recent actions/CMD results. The model cannot mutate the PC or execute shell commands. Calls are capped at four model requests and 30 seconds per answer, with a process-wide limit of 30 requests per minute. Provider errors are shown explicitly. Keys stay server-side. Local explanations and OpenAI responses are labeled separately. See the [official Responses API reference](https://developers.openai.com/api/reference/resources/responses/methods/create/).
+Hướng dẫn đọc trạng thái máy, không tiến bước bằng đánh dấu thủ công. Thay đổi cấu hình sẽ cập nhật gợi ý. **Chỉ vị trí thao tác** chỉ mở đúng màn hình và đưa tiêu điểm tới nút cần dùng; **Vì sao cần bước này?** giải thích cơ sở kỹ thuật.
 
-## Verification
+Bật hướng dẫn không tự xóa ổ hay tạo phiên mới. Máy đã có Windows cần lựa chọn cài lại rõ ràng; Windows có sẵn không được coi là kết quả của lần cài theo hướng dẫn. Chuẩn bị phân vùng vẫn cần xác nhận riêng.
+
+### Chuẩn bị và nạp driver
+
+Trên máy thật, nếu cần driver lưu trữ, dùng máy đang hoạt động để tra **đúng model, bộ điều khiển, Windows và kiến trúc**, tải từ trang hãng, giải nén theo tài liệu rồi chép vào USB **sau khi đã tạo USB boot**. Không format hoặc tạo lại USB sau khi chép. USB chứa tệp để bộ cài đọc, không phải thiết bị được cài driver.
+
+**Không phải máy nào cũng cần nạp driver để nhận SSD.** Nếu BIOS nhận ổ nhưng Windows Setup chưa nhận, kiểm tra gói lưu trữ phù hợp. Nếu BIOS cũng không nhận, cần kiểm tra thêm kết nối, phần cứng hoặc cấu hình. Không đổi RAID/VMD/AHCI tùy tiện trên máy có Windows hay RAID. AMD/ARM không dùng mặc định gói Intel VMD x64.
+
+Trong mô phỏng Intel VMD x64:
+
+1. Mở **Chuẩn bị driver**, chọn **Gói Intel VMD x64**.
+2. Chọn **Tải gói mô phỏng**, **Giải nén gói**, kết nối USB rồi **Chép vào USB**.
+3. Trong Windows Setup khi chưa thấy SSD, chọn **Nạp driver Intel VMD → Browse**.
+4. Chọn `E:\Drivers\Storage`, xác nhận thư mục, chọn **Intel VMD Controller (x64)** rồi **Nạp driver**.
+
+Gói Ethernet không tương thích bộ điều khiển lưu trữ. Nạp driver chỉ làm SSD xuất hiện, không format ổ. Tệp trên USB còn sau khi rút USB; driver tạm trong Setup cần nạp lại khi khởi động lại bộ cài. Driver của Windows đã cài được theo dõi riêng.
+
+Tên tệp như `vmd-controller.inf`, ký tự ổ `E:` và đường dẫn chỉ là ví dụ. Ứng dụng không tải driver thật, giải nén thật, đọc USB, phân tích INF, kiểm tra Hardware ID/chữ ký hoặc thực thi driver. Bộ duyệt chỉ tìm trong thư mục chọn, không quét thư mục con. Liên kết hãng là cổng tra cứu, không tự tìm hay xác minh gói từng model. EXE cần cách trích xuất do hãng hướng dẫn, không có lệnh chung cho mọi gói. Driver Wi-Fi/LAN sau cài là các gói riêng.
+
+### Kiểm tra và xử lý mạng
+
+Trong **Hướng dẫn**, chọn **Kiểm tra và xử lý mạng**. Hướng dẫn bắt đầu từ `ipconfig /all`, rồi gợi ý kiểm tra theo trạng thái IP, gateway, DNS hoặc DHCP.
+
+```text
+ipconfig /all
+ping 192.168.1.1
+ping 192.168.1.10
+ping 8.8.8.8
+nslookup example.com
+ipconfig /renew
+ipconfig /flushdns
+```
+
+Nhập `help` trong CMD mô phỏng để xem các lệnh hỗ trợ. Đây không phải lệnh hệ thống hoặc lưu lượng mạng thật; kết nối IP và phân giải DNS được kiểm tra riêng.
+
+Thay đổi trường mạng chỉ là bản nháp tới khi chọn **Áp dụng cấu hình**. Bật lại DHCP không tự gia hạn IP. Khi cấu hình, DHCP hoặc nguồn thay đổi và sau khi khởi động lại, quan sát chẩn đoán cũ bị vô hiệu hóa; lịch sử CMD vẫn giữ để tham khảo. Máy chưa có Windows không tạo kết quả kiểm tra mạng giả. Chuyển hướng dẫn không làm mất cấu hình máy hay lựa chọn cài lại Windows.
+
+### Sổ tay và hồ sơ ASUS
+
+Mở **Sổ tay cài Windows** hoặc `/handbook`: nhận diện thiết bị, sao lưu, BitLocker nếu có mã hóa, chuẩn bị USB, boot, driver, phân vùng và bàn giao. Có nhánh cài mới và cài lại từ Windows để giữ tệp/ứng dụng khi được hỗ trợ. Có thể in toàn bộ quy trình; dấu kiểm là ghi chú cá nhân, không chứng nhận đã thao tác đúng.
+
+Danh mục ASUS ban đầu có X515EA, FA506NC, X1504VA, UX3405MA, D500ME và PRIME B760M-A WIFI D4, phân biệt laptop, desktop nguyên bộ và mainboard. Model không khớp dùng hướng dẫn tổng quát. Không suy ra VMD từ tên model; CPU được chọn thủ công và đặt lại khi đổi model, không tự phát hiện phần cứng.
+
+Các hồ sơ hiện đều ở mức **tổng quát (`general`)**, chưa kiểm chứng cài đặt trên máy thật. Mở được trang tài liệu không đồng nghĩa quy trình đã được xác minh. Nguồn và mức kiểm chứng ghi tại `src/lib/asus-profiles.ts`; nâng lên `documented` hoặc `tested` cần bằng chứng đúng firmware, bản Windows, ngày và phạm vi.
+
+<details>
+<summary>Ghi chú đối chiếu nguồn</summary>
+
+- Ngày 19/10/2026 đã tham khảo hướng dẫn vào BIOS ASUS, trang tải Windows 11 của Microsoft và ASUS FAQ 1044458 về driver theo nền tảng.
+- Trang tài liệu X515EA và FA506NC được mở để xác nhận danh tính, chưa kiểm chứng firmware, driver hoặc cài đặt. Các liên kết model khác được đánh dấu chưa kiểm tra.
+- Bài Dell trả HTTP 403, bài HP hết thời gian chờ và ASUS FAQ boot 1030858 trả 404. Phím tắt theo hãng là thông lệ tham khảo, không phải xác minh cho từng model.
+- Danh mục không bao phủ mọi model ASUS. Kiểm tra tài liệu đúng model, revision và firmware trước khi áp dụng trên thiết bị thật.
+
+</details>
+
+## Trợ lý AI tùy chọn
+
+Mặc định ứng dụng dùng giải thích cục bộ không cần API key. Để kết nối OpenAI, tạo `.env.local` dựa trên `.env.example`:
+
+```dotenv
+SUPPORTLAB_AI_ENABLED=true
+OPENAI_API_KEY=
+OPENAI_MODEL=
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+Điền khóa riêng và model hỗ trợ Responses API mà tài khoản được phép dùng, rồi khởi động lại máy chủ. Ứng dụng không tự chọn model. **Không commit `.env.local`, API key hoặc nhập mật khẩu/khóa khôi phục BitLocker vào trò chuyện.**
+
+Trợ lý chỉ đọc cấu hình máy mô phỏng và nhật ký/kết quả CMD để giải thích, không thay đổi máy hoặc thực thi lệnh hệ thống. Máy chủ kiểm tra snapshot bằng Zod; giới hạn tối đa 4 yêu cầu model và 30 giây/câu trả lời, 30 yêu cầu/phút trong một tiến trình. Lỗi nhà cung cấp được hiển thị; phản hồi cục bộ và OpenAI có nhãn riêng. Khóa giữ ở máy chủ.
+
+Tham khảo: [Tài liệu Responses API chính thức](https://developers.openai.com/api/reference/resources/responses/methods/create/).
+
+## Kiểm thử
 
 ```sh
 npm test
@@ -74,26 +173,29 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-E2E tests use port 3100 with an isolated `.next-e2e` output directory and local technical explanations. Screenshots are generated in `output/screenshots`.
+Playwright dùng cổng `3100`, thư mục build riêng và trợ lý cục bộ. Ảnh kiểm thử ở `output/screenshots` không đẩy lên Git; ảnh giới thiệu ở `docs/images` được commit để GitHub hiển thị trong README.
 
-## Windows installation handbook
+## Cấu trúc chính
 
-Open `/handbook` or choose "Sổ tay cài Windows" in the sidebar. Select Dell, ASUS laptop, HP, or a custom PC motherboard vendor. The guide branches between a clean USB installation and reinstalling from running Windows while retaining files/apps. It covers device identification, backup and BitLocker, USB media, one-time boot, storage drivers, partitions, driver installation and handover checks. The print button prints the entire selected procedure. Checkmarks are personal notes, not automated validation, and reset on device/mode changes or refresh. Entering a model does not fetch or verify its manual.
+```text
+src/app/             Trang ứng dụng, sổ tay và API trợ lý
+src/components/      Giao diện máy tính, công cụ và hướng dẫn
+src/lib/             Trạng thái, logic mô phỏng và nội dung tham khảo
+tests/               Kiểm thử logic và trạng thái
+tests/e2e/           Kiểm thử trình duyệt
+docs/images/         Ảnh giới thiệu trong README
+.env.example         Mẫu cấu hình không chứa khóa thật
+```
 
-Profiles are general vendor guidance, not model-specific BIOS replicas. ASUS F2 entry and Microsoft's Windows 11 download page were consulted on 2026-10-19. Dell's article returned HTTP 403 and HP's article timed out; their key sequences and motherboard shortcuts are common conventions, not newly verified model-level claims. Follow the linked official support portals to verify the exact model/revision/firmware. The simulator remains generic and simplified; adding this handbook does not make its firmware or partition behavior hardware-accurate.
+Trạng thái firmware, ổ đĩa, mạng, USB và nguồn dùng chung qua Zustand trong `src/lib/store.ts`; logic khởi động, mạng và CMD ở `src/lib/engine.ts`. Phiên chưa lưu bền vững: tạo phiên mới hoặc tải lại trang sẽ xóa dữ liệu mô phỏng, nhật ký và trò chuyện.
 
-## ASUS profiles
+## Phạm vi và giới hạn
 
-Choose ASUS in the handbook to search initial records for X515EA, FA506NC, X1504VA, UX3405MA, D500ME and PRIME B760M-A WIFI D4. Laptop, prebuilt desktop and retail motherboard guidance is separate. Exact, case-insensitive model matching preserves suffixes; unknown models fall back to the selected device group without claiming model-specific validation. CPU platform is selected manually and resets when the model changes. Intel guidance is conditional on the controller and OS, AMD excludes Intel drivers, and ARM uses an ARM64-specific USB preparation path.
+- Chưa phải trình giả lập Windows/BIOS đầy đủ, hypervisor hoặc bộ cài thật. Cài Windows là chuyển trạng thái tức thì, chưa mô phỏng sao chép tệp và OOBE.
+- BIOS tổng quát không tái hiện chính xác từng model. Sổ tay không thay thế tài liệu hãng hay kiểm chứng trên máy thật.
+- Mạng cố định `192.168.1.0/24`: router `.1`, máy chủ nội bộ `.10`, IP thuê DHCP `.50`. DNS biết trước: `.1`, `1.1.1.1`, `8.8.8.8`; `example.com` và `uit.edu.vn` có bản ghi minh họa cố định. Chưa mô phỏng cáp hoặc Wi-Fi vật lý.
+- Chuẩn bị GPT tự động xóa toàn bộ phân vùng mô phỏng; chưa có trình chia ổ tùy ý. Schema chỉ có FAT32/NTFS nên MSR dùng NTFS giữ chỗ nhưng không hiển thị filesystem; MSR thật không được format.
+- Chưa mô phỏng cài Office, lắp ráp/sửa phần cứng, máy in hoặc camera.
+- Chưa có tài khoản, lưu phiên bền vững hoặc hạn mức phân tán. Snapshot trợ lý do trình duyệt gửi; cần kiểm soát truy cập và tài nguyên trước khi triển khai công khai. AI bên ngoài chưa được dùng trong kiểm thử tự động.
 
-`src/lib/asus-profiles.ts` contains the catalog, reference provenance and procedure verification levels (`general`, `documented`, `tested`). All six initial records are currently `general`. The X515EA and FA506NC manual landing pages were opened on 2026-10-19 to confirm their identities only; their manuals, firmware, driver configurations and installations have not been validated. Other model links are explicitly marked unchecked. No physical ASUS device has been tested. Source-page availability never promotes a procedure to verified. To record a documented/tested procedure, supply precise firmware, Windows version, date and scope in `procedureEvidence`, and attach the relevant sources before changing its level.
-
-ASUS FAQ 1044458 was consulted on 2026-10-19 for general storage-driver applicability. It distinguishes Intel platforms and Windows versions; the application does not infer IRST requirements from a model string or require Intel drivers on every device. ASUS boot-menu FAQ 1030858 returned 404, so no new verified boot-menu claim was added. This catalog is extensible, not an exhaustive ASUS model database. All data remains local to the session; no automatic model lookup or hardware detection is performed.
-
-## Simulator limitations
-
-This is a research prototype, not an emulator, hypervisor, Windows distribution or real installer. Installation is an immediate state transition, not an actual file copy. The virtual network is fixed to `192.168.1.0/24`; router `.1`, internal server `.10`, DHCP lease `.50`. Known DNS resolvers are `.1`, `1.1.1.1`, `8.8.8.8`; domains are `example.com` and `uit.edu.vn` with fixed illustrative records. No real network traffic or system commands are performed by CMD. `help` lists supported commands. IPv4 connectivity and DNS resolution are separate checks.
-
-The requested partition schema permits only FAT32/NTFS. MSR therefore stores an NTFS placeholder but is displayed without a filesystem; a real MSR is unformatted. Automatic GPT preparation resets all simulated partitions. No arbitrary partition editor, Office setup, hardware repair or camera configuration is included.
-
-Agent state comes from browser-provided snapshots. This local prototype has a process-wide rate budget but no accounts, durable sessions or distributed rate limiting. Public deployment requires appropriate access controls and resource limits. External AI is optional and has not been used by the automated tests.
+Word/Excel phục vụ khóa luận, thư viện cài đặt, tệp bí mật và kết quả build được loại khỏi repository bằng `.gitignore`.
