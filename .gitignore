@@ -1,0 +1,27 @@
+node_modules/
+.next/
+.next-dev/
+.next-e2e/
+.env*
+!.env.example
+test-results/
+playwright-report/
+output/
+*.tsbuildinfo
+
+# Local thesis documents, not application source
+/Hoso/
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.xlsm
+*.ppt
+*.pptx
+*.pdf
+
+# Local credentials and editor settings
+*.pem
+*.key
+.vscode/
+.idea/
