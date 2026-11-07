@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SupportLab: fresh, isolated UEFI guests only. No hardware-check bypasses.
+     VBox resolves its placeholders when preparing auxiliary media.
+     The generated copy contains a VM-only password and must stay private. -->
+<unattend xmlns="urn:schemas-microsoft-com:unattend" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
+  <settings pass="windowsPE">
+    <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="@@VBOX_INSERT_OS_ARCH_ATTRIB_DQ@@" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <SetupUILanguage><UILanguage>@@VBOX_INSERT_LANGUAGE@@</UILanguage></SetupUILanguage>
+      <InputLocale>en-US</InputLocale><SystemLocale>@@VBOX_INSERT_DASH_LOCALE@@</SystemLocale><UILanguage>@@VBOX_INSERT_LANGUAGE@@</UILanguage><UserLocale>@@VBOX_INSERT_DASH_LOCALE@@</UserLocale>
+    </component>
+    <component name="Microsoft-Windows-Setup" processorArchitecture="@@VBOX_INSERT_OS_ARCH_ATTRIB_DQ@@" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <DiskConfiguration>
+        <Disk wcm:action="add"><DiskID>0</DiskID><WillWipeDisk>true</WillWipeDisk>
+          <CreatePartitions>
+            <CreatePartition wcm:action="add"><Order>1</Order><Type>EFI</Type><Size>260</Size></CreatePartition>
+            <CreatePartition wcm:action="add"><Order>2</Order><Type>MSR</Type><Size>16</Size></CreatePartition>
+            <CreatePartition wcm:action="add"><Order>3</Order><Type>Primary</Type><Extend>true</Extend></CreatePartition>
+          </CreatePartitions>
+          <ModifyPartitions>
+            <ModifyPartition wcm:action="add"><Order>1</Order><PartitionID>1</PartitionID><Format>FAT32</Format><Label>System</Label></ModifyPartition>
+            <ModifyPartition wcm:action="add"><Order>2</Order><PartitionID>2</PartitionID></ModifyPartition>
+            <ModifyPartition wcm:action="add"><Order>3</Order><PartitionID>3</PartitionID><Format>NTFS</Format><Label>Windows</Label><Letter>C</Letter></ModifyPartition>
+          </ModifyPartitions>
+        </Disk><WillShowUI>OnError</WillShowUI>
+      </DiskConfiguration>
+      <ImageInstall><OSImage>
+        <InstallFrom><MetaData wcm:action="add"><Key>/IMAGE/INDEX</Key><Value>@@VBOX_INSERT_IMAGE_INDEX_ELEMENT@@</Value></MetaData></InstallFrom>
+        <InstallTo><DiskID>0</DiskID><PartitionID>3</PartitionID></InstallTo><WillShowUI>OnError</WillShowUI>
+      </OSImage></ImageInstall>
+      <UserData><AcceptEula>true</AcceptEula><FullName>SupportLab</FullName><Organization>SupportLab</Organization></UserData>
+    </component>
+  </settings>
+  <settings pass="specialize">
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="@@VBOX_INSERT_OS_ARCH_ATTRIB_DQ@@" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <ComputerName>@@VBOX_INSERT_HOSTNAME_WITHOUT_DOMAIN_MAX_15@@</ComputerName>
+    </component>
+  </settings>
+  <settings pass="oobeSystem">
+    <component name="Microsoft-Windows-International-Core" processorArchitecture="@@VBOX_INSERT_OS_ARCH_ATTRIB_DQ@@" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <InputLocale>en-US</InputLocale><SystemLocale>@@VBOX_INSERT_DASH_LOCALE@@</SystemLocale><UILanguage>@@VBOX_INSERT_LANGUAGE@@</UILanguage><UserLocale>@@VBOX_INSERT_DASH_LOCALE@@</UserLocale>
+    </component>
+    <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="@@VBOX_INSERT_OS_ARCH_ATTRIB_DQ@@" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
+      <UserAccounts><AdministratorPassword><Value>@@VBOX_INSERT_USER_PASSWORD_ELEMENT@@</Value><PlainText>true</PlainText></AdministratorPassword></UserAccounts>
+      <AutoLogon><Password><Value>@@VBOX_INSERT_USER_PASSWORD_ELEMENT@@</Value><PlainText>true</PlainText></Password><Enabled>true</Enabled><LogonCount>1</LogonCount><Username>Administrator</Username></AutoLogon>
+      <OOBE><HideEULAPage>true</HideEULAPage><HideOnlineAccountScreens>true</HideOnlineAccountScreens><HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE><ProtectYourPC>3</ProtectYourPC></OOBE>
+      <FirstLogonCommands><SynchronousCommand wcm:action="add"><Order>1</Order><Description>Disable autologon and install Guest Additions for SupportLab</Description><CommandLine>cmd.exe /c @@VBOX_INSERT_AUXILIARY_INSTALL_DIR@@VBOXPOST.CMD</CommandLine></SynchronousCommand></FirstLogonCommands>
+      <TimeZone>@@VBOX_INSERT_TIME_ZONE_WIN_NAME@@</TimeZone>
+    </component>
+  </settings>
+</unattend>

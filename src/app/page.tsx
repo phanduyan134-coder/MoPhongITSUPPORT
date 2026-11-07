@@ -1,2 +1,3 @@
-import { Lab } from "@/components/lab";
-export default function Page() { return <Lab />; }
+import { SimulationHome } from "@/components/simulation-home";
+
+export default function Page() { return <SimulationHome />; }

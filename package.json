@@ -7,26 +7,32 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/engine.test.ts tests/asus-profiles.test.ts tests/install-guide.test.ts tests/guidance-store.test.ts tests/network-guide.test.ts tests/network-guide-store.test.ts tests/driver-media.test.ts",
-    "test:e2e": "playwright test"
+    "test": "tsx --test tests/*.test.ts",
+    "test:e2e": "playwright test",
+    "pilot:dns": "tsx scripts/dns-pilot.ts",
+    "compare:dns": "tsx scripts/compare-dns-reference.ts",
+    "evaluate:agent": "tsx scripts/evaluate-agent.ts"
   },
   "dependencies": {
+    "@xstate/react": "^6.1.0",
+    "lucide-react": "^0.468.0",
+    "motion": "^14.6.0",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "zustand": "^5.0.0",
-    "lucide-react": "^0.468.0",
-    "zod": "^3.24.0"
+    "xstate": "^5.33.3",
+    "zod": "^3.24.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "tailwindcss": "^3.4.17",
-    "postcss": "^8.4.49",
     "autoprefixer": "^10.4.20",
-    "typescript": "^5.7.0",
-    "tsx": "^4.19.0"
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
   }
 }

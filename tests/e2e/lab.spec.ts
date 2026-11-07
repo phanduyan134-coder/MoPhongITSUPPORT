@@ -31,7 +31,7 @@ async function prepareAndLoadStorageDriver(page: Page) {
 }
 
 test("default session is a healthy desktop with freely accessible tools", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Máy tính mô phỏng");
   await expect(page.getByRole("tab", { name: "Màn hình", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(page.getByRole("tabpanel")).toContainText("Windows 11");
@@ -48,7 +48,7 @@ test("default session is a healthy desktop with freely accessible tools", async 
 });
 
 test("blank PC installs Windows through BIOS, attached USB and one-time SSD boot", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Tạo phiên mới", exact: true }).click();
   await page.getByRole("combobox", { name: "Trạng thái khởi tạo" }).selectOption("blank");
   await page.getByRole("button", { name: "Tạo phiên", exact: true }).click();
@@ -84,7 +84,7 @@ test("blank PC installs Windows through BIOS, attached USB and one-time SSD boot
 });
 
 test("DNS edits affect CMD and new sessions clear chat, commands and actions", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await setNetworkField(page, "DNS Server", "999.1.1.1");
   await expect(page.getByRole("alert").filter({ hasText: "IPv4 hợp lệ" })).toBeVisible();
   await setNetworkField(page, "DNS Server", "192.168.1.254");
@@ -107,7 +107,7 @@ test("DNS edits affect CMD and new sessions clear chat, commands and actions", a
 });
 
 test("router DHCP availability and client renew control the simulated lease", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("tab", { name: "Cấu hình mạng", exact: true }).click();
   await page.getByRole("switch", { name: "Dịch vụ DHCP trên router" }).click();
   await page.getByRole("switch", { name: "Nhận IP tự động", exact: true }).click();
@@ -124,7 +124,7 @@ test("router DHCP availability and client renew control the simulated lease", as
 });
 
 test("gateway edits preserve LAN and cancelling a session retains the current PC", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await setNetworkField(page, "Default Gateway", "192.168.1.254");
   await expect(await command(page, "ping 192.168.1.10")).toContainText("Received = 4");
   await expect(await command(page, "ping 8.8.8.8")).toContainText("100% loss");
@@ -151,7 +151,7 @@ test("agent accepts PC snapshots and rejects malformed or legacy-only requests",
 for (const viewport of [{ name: "desktop", width: 1440, height: 1050 }, { name: "mobile", width: 390, height: 844 }]) {
   test(`${viewport.name} layout renders five tools without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/");
+    await page.goto("/pc");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     for (const tab of ["Màn hình", "BIOS / UEFI", "Cài đặt Windows", "Cấu hình mạng", "Command Prompt"]) {
       await page.getByRole("tab", { name: tab, exact: true }).click();

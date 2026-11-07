@@ -9,7 +9,7 @@ function loader(page: Page) {
 }
 
 async function blankPC(page: Page) {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Tạo phiên mới", exact: true }).click();
   await page.getByRole("dialog").getByRole("combobox", { name: "Trạng thái khởi tạo" }).selectOption("blank");
   await page.getByRole("dialog").getByRole("button", { name: "Tạo phiên", exact: true }).click();

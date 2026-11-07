@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("handbook selects manufacturer, separates motherboard shortcuts and branches for preserving apps", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("link", { name: /Sổ tay cài Windows/ }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Cài Windows theo thiết bị");
   await expect(page.locator(".device-summary")).toContainText("F12");

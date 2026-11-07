@@ -1,14 +1,59 @@
-# SupportLab · Mô phỏng IT Support
+# SupportLab · Mô phỏng hệ thống CNTT
 
-Nền tảng Web mô phỏng cài đặt hệ thống và xử lý sự cố CNTT, tích hợp trợ lý AI tùy chọn. Đây là bản mẫu nghiên cứu phục vụ định hướng khóa luận, tập trung vào cài Windows và xử lý sự cố mạng cơ bản.
+Nền tảng Web mô phỏng cấu hình và xử lý sự cố hệ thống CNTT, tích hợp trợ lý AI tùy chọn. Bản mẫu 0.2 tổ chức lại màn hình chính thành phòng hệ thống **Windows Server**, theo bốn nhóm: DNS/DHCP, IIS, kết nối mạng và một số lỗi tài nguyên/dịch vụ.
 
-Người dùng tự thay đổi cấu hình và quan sát kết quả trên máy tính mô phỏng. Ứng dụng không tổ chức bài tập, chấm điểm hay tự động sửa lỗi.
+Người dùng tự thay đổi cấu hình và quan sát kết quả trong cùng một mạng mô phỏng. Hướng dẫn là tùy chọn; ứng dụng không tổ chức bài trắc nghiệm, chấm điểm hay tự động sửa lỗi.
 
-![Giao diện tổng quan máy tính mô phỏng SupportLab](docs/images/tong-quan.png)
+**Mới sử dụng?** Đọc [Giải thích phần mềm cho người mới](docs/giai-thich-phan-mem.md): ý nghĩa các màn hình, thuật ngữ và ví dụ xử lý lỗi DNS từng bước.
 
-> Đây là mô phỏng bằng trạng thái phần mềm, không phải máy ảo chạy Windows thật. Các thao tác không thay đổi BIOS, ổ đĩa, USB hoặc mạng của máy đang mở trình duyệt.
+**Kiểm chứng khóa luận:** xem [bộ kiểm chứng](docs/kiem-chung/README.md) để đọc ma trận chấp nhận bốn nhóm, rubric đánh giá AI Agent và phiếu đối chiếu Windows Server/Client.
 
-## Chức năng hiện có
+Trang chủ **`/`** dùng để chọn tình huống mô phỏng. Phòng hệ thống tại **`/system`**. Mô-đun cài Windows trước đây được giữ tại **`/pc`**, sổ tay tại **`/handbook`**.
+
+**Desktop Windows mô phỏng:** trang chủ cho chọn bốn nhóm, tình huống và **Có hướng dẫn** hoặc **Tự khám phá**. Mỗi phiên mở sơ đồ CLIENT-01 — SW-01 — SRV-01, desktop từng máy, cửa sổ và thanh tác vụ riêng. Server Manager có menu Tools dẫn tới DNS, DHCP, Services, IIS, Event Viewer và PowerShell; thay đổi trên SRV-01 làm kết quả kiểm tra từ CLIENT-01 thay đổi theo. Các cửa sổ dùng chung trạng thái với trợ lý AI. Xem [hướng dẫn sử dụng desktop](docs/giao-dien-desktop-mo-phong.md).
+
+![Services trên desktop máy chủ, phía trên là sơ đồ máy chủ–máy trạm](docs/images/desktop-dns-services.png)
+
+![Phòng mô phỏng hệ thống Windows Server với máy chủ, máy trạm và các dịch vụ dùng chung](docs/images/he-thong-windows-server.png)
+
+> Đây là mô phỏng bằng trạng thái phần mềm, không phải máy ảo chạy Windows/Windows Server thật. Các thao tác không thay đổi BIOS, ổ đĩa, USB hoặc mạng của máy đang mở trình duyệt. Hành vi mới chưa được kiểm chứng đầy đủ trên Windows Server thật.
+
+## Phòng hệ thống Windows Server
+
+| Nhóm | Chức năng nguyên mẫu đã triển khai |
+| --- | --- |
+| DNS / DHCP | Thêm role, bật/dừng dịch vụ, lưu một bản ghi A, cấu hình scope/option, bật DHCP trên client và gia hạn lease. |
+| Web Server IIS | Thêm role, đổi cổng binding, bật/dừng website và application pool, kiểm tra HTTP từ máy trạm. |
+| Kết nối mạng | Thay IPv4/prefix/gateway/DNS, nối/ngắt link, bật/tắt interface; chẩn đoán cùng LAN và qua gateway. |
+| Windows Server | Ổ dữ liệu đầy, dọn tệp tạm có xác nhận, bảo vệ dữ liệu, quyền đọc Share/NTFS cho tài khoản local mẫu và Startup Type của LabWorker qua reboot. |
+
+Mạng mới gồm SRV-01 `192.168.10.10/24`, CLIENT-01, gateway `192.168.10.1` và đích kiểm tra khác mạng `192.168.20.10`. Tên website là `portal.lab.test`. Đây là địa chỉ trong mô hình, không phải các phép dò mạng thật.
+
+**Tạo phiên mới** cung cấp 18 trạng thái ban đầu đã có handler hoạt động, gồm máy chủ mới, trạng thái bình thường và các sự cố. Danh mục trong [kế hoạch chỉnh sửa](docs/ke-hoach-chinh-sua/README.md) có 22 ca ứng viên; không có nghĩa tất cả ca và tiêu chí nghiên cứu đã hoàn thành.
+
+Phiên hệ thống dùng trạng thái chính trên máy chủ ứng dụng, có revision để từ chối thao tác dựa trên dữ liệu cũ. Zustand phản chiếu trạng thái và quản lý giao diện. Phiên nằm trong bộ nhớ một tiến trình, hết hạn sau 2 giờ không hoạt động, tối đa 200 phiên; không dùng cho triển khai nhiều instance. Tải lại trang tạo phiên mới. Có thể xuất JSON để tham khảo, **chưa có nhập lại hoặc tài khoản/lưu bền vững**.
+
+Terminal chỉ đọc trong mô hình hỗ trợ `ipconfig`, `ping`, `nslookup`, `curl`, `Get-Service`, `Get-DhcpServerv4OptionValue -ScopeId 192.168.10.0`, `Get-Volume`, `Get-WinEvent`, `Get-SmbShareAccess`, `icacls` và `Test-Share` với tập tham số giới hạn. Nhập `help` để xem danh sách; thay đổi cấu hình qua các bảng điều khiển. `Get-Volume` chỉ cho biết thông tin và dung lượng ổ, không liệt kê tệp hoặc xác định tệp an toàn để xóa.
+
+### Luồng truy vấn DNS trực quan
+
+Khi bạn tự chạy `nslookup` trong Terminal, dải quan sát DNS phía trên công cụ biểu diễn một lượt yêu cầu, chờ và phản hồi theo kết quả engine. Nó ghi lại thiết bị/IP nguồn, DNS đích, tên truy vấn, kết quả và revision; không suy từ timeout rằng dịch vụ chắc chắn bị dừng. Bản ghi trả sai IP vẫn là **có phản hồi DNS**, khác với NXDOMAIN hoặc không nhận được phản hồi. Truy vấn local trên server và DNS ngoài mô hình không được vẽ thành một lượt trao đổi LAN thành công.
+
+Thử nhanh: mở [tình huống DNS](http://127.0.0.1:3000/system?preset=dns-stopped&guide=dns), chạy `ping 192.168.10.10` rồi `nslookup portal.lab.test` trên CLIENT-01, quan sát timeout; kiểm tra dịch vụ và tự sửa theo hướng dẫn, rồi tra DNS lại để thấy phản hồi. Nút phát lại/tạm dừng chỉ điều khiển hình minh họa đã ghi nhận, không chạy thêm lệnh hoặc tự sửa cấu hình. Khi trạng thái thay đổi, quan sát cũ được đánh dấu và dừng phát; cần chạy lại lệnh để có kết quả mới. Chế độ giảm chuyển động hiển thị ngay khung kết quả tĩnh.
+
+Đây là hình minh họa theo trạng thái mô phỏng, **không phải packet capture, mạng thật hoặc phép đo thời gian**. Hiện mới có luồng DNS; hiệu ứng DHCP DORA và HTTP chưa triển khai. Xem [cách đọc và thử luồng DNS](docs/giai-thich-phan-mem.md#luồng-truy-vấn-dns-trực-quan).
+
+Trợ lý mới có công cụ đọc phiên, chẩn đoán và tìm kiếm ghi chú kỹ thuật có nguồn Microsoft Learn. Khi chưa cấu hình AI, phản hồi được gắn nhãn **Cục bộ · không dùng AI**. Khi bật API, Agent dùng vòng gọi công cụ chỉ đọc; không nhận ID preset/đáp án tình huống và không tự sửa cấu hình. Nếu API lỗi sẽ chuyển sang cục bộ có thông báo rõ, không coi là kết quả model.
+
+**Giới hạn:** chưa có AD DS, domain, DHCP nhiều máy, toàn bộ DNS zone/cache/forwarder, cấu hình IIS tổng quát, HTTPS, ACL kế thừa/Deny hoặc đầy đủ Services/Event Viewer. Các quy tắc kết nối, lease, HTTP, ổ dữ liệu và quyền được giản lược. Còn cần đối chiếu lab thật, đánh giá model thật và thử nghiệm người dùng trước khi kết luận đáp ứng đầy đủ yêu cầu khóa luận.
+
+![Quản lý ổ dữ liệu, quyền Share và NTFS cùng dịch vụ mẫu trên máy chủ mô phỏng](docs/images/tai-nguyen-windows-server.png)
+
+Trong trợ lý tại `/system`, nút **Kiểm tra lại DNS / website** chạy năm phép kiểm trên cùng cấu hình hiện tại: ping, dịch vụ DNS, phân giải tên, HTTP theo tên và HTTP qua IP. Phần nhận định phân biệt lỗi mạng, dịch vụ DNS, phân giải, IIS và lỗi kết hợp; kết quả cũ được đánh dấu khi cấu hình thay đổi. Nút **Xuất hồ sơ phiên** tải JSON gồm thao tác trước/sau, chẩn đoán và input/output công cụ của trợ lý; phân biệt quy trình kiểm tra cố định, công cụ model tự chọn và fallback cục bộ. Hồ sơ lưu tạm trong RAM, có giới hạn dung lượng và dấu hiệu lược bỏ; chưa có chức năng nhập lại. Xem [cách thử và lưu hồ sơ](docs/giai-thich-phan-mem.md#kiểm-tra-lại-sau-khi-sửa-dns-hoặc-website).
+
+Ngày 05/11/2026, đã đối chiếu ba giai đoạn DNS với log của hai VM đã đo ngày 02/11: năm hành vi DNS/IIS cùng LAN đều khớp trong phạm vi ca D02. Chạy `npm run compare:dns` để kiểm hash bằng chứng cục bộ và so sánh mã mô phỏng hiện tại; lệnh không khởi động VM hoặc gọi AI. Xem [báo cáo nâng cấp và ảnh thử trên Web](docs/bao-cao-nang-cap-dns-2026-11-05.md). Kết quả chưa xác nhận toàn bộ pilot, mọi hành vi Windows hoặc chất lượng model thật.
+
+## Mô-đun cài Windows được giữ lại
 
 | Thành phần | Nội dung |
 | --- | --- |
@@ -24,7 +69,7 @@ Người dùng tự thay đổi cấu hình và quan sát kết quả trên máy
 
 ## Công nghệ
 
-Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide React, Zustand và Zod. Kiểm thử bằng Node.js Test Runner qua `tsx` và Playwright.
+Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide React, Zustand, Zod, XState và Motion for React. Kiểm thử bằng Node.js Test Runner qua `tsx` và Playwright.
 
 ## Cài đặt và chạy
 
@@ -54,6 +99,8 @@ Môi trường phát triển dùng `.next-dev`, bản build dùng `.next`, kiể
 
 Ảnh chụp trực tiếp từ bản mẫu, không phải giao diện BIOS thật của từng model.
 
+Các ảnh BIOS, driver, mạng và sổ tay dưới đây thuộc mô-đun **`/pc`**, không phải giao diện Windows Server mới.
+
 ### BIOS / UEFI
 
 Cấu hình firmware tổng quát và quan sát ảnh hưởng tới khởi động, nhận SSD và cài đặt.
@@ -78,7 +125,7 @@ Chọn nhóm thiết bị và mục tiêu cài đặt để xem quy trình cùng
 
 ![Sổ tay cài Windows theo thiết bị](docs/images/so-tay.png)
 
-## Sử dụng mô phỏng
+## Sử dụng mô-đun cài Windows (`/pc`)
 
 ### Cài Windows có hướng dẫn
 
@@ -159,7 +206,7 @@ OPENAI_BASE_URL=https://api.openai.com/v1
 
 Điền khóa riêng và model hỗ trợ Responses API mà tài khoản được phép dùng, rồi khởi động lại máy chủ. Ứng dụng không tự chọn model. **Không commit `.env.local`, API key hoặc nhập mật khẩu/khóa khôi phục BitLocker vào trò chuyện.**
 
-Trợ lý chỉ đọc cấu hình máy mô phỏng và nhật ký/kết quả CMD để giải thích, không thay đổi máy hoặc thực thi lệnh hệ thống. Máy chủ kiểm tra snapshot bằng Zod; giới hạn tối đa 4 yêu cầu model và 30 giây/câu trả lời, 30 yêu cầu/phút trong một tiến trình. Lỗi nhà cung cấp được hiển thị; phản hồi cục bộ và OpenAI có nhãn riêng. Khóa giữ ở máy chủ.
+Trợ lý cũ tại `/pc` chỉ đọc snapshot máy mô phỏng và nhật ký/kết quả CMD. Nó giới hạn 4 yêu cầu model, 30 giây/câu trả lời và 30 yêu cầu/phút trong một tiến trình. Trợ lý mới tại `/` đọc phiên chính trên máy chủ, có công cụ chẩn đoán/truy xuất, giới hạn số vòng công cụ, 25 giây và hạn mức yêu cầu. Cả hai không thay đổi máy hay thực thi lệnh hệ thống; phản hồi cục bộ và OpenAI có nhãn riêng. Khóa giữ ở máy chủ.
 
 Tham khảo: [Tài liệu Responses API chính thức](https://developers.openai.com/api/reference/resources/responses/methods/create/).
 
@@ -181,13 +228,26 @@ Playwright dùng cổng `3100`, thư mục build riêng và trợ lý cục bộ
 src/app/             Trang ứng dụng, sổ tay và API trợ lý
 src/components/      Giao diện máy tính, công cụ và hướng dẫn
 src/lib/             Trạng thái, logic mô phỏng và nội dung tham khảo
+src/lib/system-*     Engine Windows Server, phiên, store và kho tri thức
+src/lib/system-guide-machine.ts State machine XState cho hướng dẫn thao tác DNS
+src/lib/scenario-guide-machine.ts Hướng dẫn DHCP, IIS, gateway và ổ đĩa đầy
+src/app/api/simulation/ API tạo phiên, thao tác và chẩn đoán hệ thống
+src/app/api/system-agent/ API trợ lý chẩn đoán cho phòng hệ thống
 tests/               Kiểm thử logic và trạng thái
 tests/e2e/           Kiểm thử trình duyệt
 docs/images/         Ảnh giới thiệu trong README
 .env.example         Mẫu cấu hình không chứa khóa thật
 ```
 
-Trạng thái firmware, ổ đĩa, mạng, USB và nguồn dùng chung qua Zustand trong `src/lib/store.ts`; logic khởi động, mạng và CMD ở `src/lib/engine.ts`. Phiên chưa lưu bền vững: tạo phiên mới hoặc tải lại trang sẽ xóa dữ liệu mô phỏng, nhật ký và trò chuyện.
+Trong mô-đun `/pc`, firmware, ổ đĩa, mạng, USB và nguồn dùng chung qua Zustand trong `src/lib/store.ts`; logic khởi động, mạng và CMD ở `src/lib/engine.ts`. Phiên này chưa lưu bền vững: tạo phiên mới hoặc tải lại trang sẽ xóa dữ liệu mô phỏng, nhật ký và trò chuyện. Mạng cố định `192.168.1.0/24` của `/pc` là mô hình cũ, độc lập với mạng `192.168.10.0/24` của phòng hệ thống.
+
+Cả năm tình huống trên trang chủ đều có dẫn thao tác: DNS, DHCP, IIS, gateway và ổ đĩa đầy. XState chuyển bước theo bằng chứng người dùng tự tạo; giao diện focus điều khiển, giải thích lý do và kết quả cần quan sát. Người dùng vẫn tự chạy lệnh, áp dụng cấu hình và xác nhận xóa tệp; Motion chỉ biểu diễn chuyển trạng thái. Mỗi luồng hiện áp dụng cho tình huống mẫu tương ứng, không bao quát mọi lỗi trong nhóm. Chi tiết tại [06-huong-dan-tuong-tac-xstate-motion.md](docs/ke-hoach-chinh-sua/06-huong-dan-tuong-tac-xstate-motion.md).
+
+- **DNS, 6 bước:** ping → tra tên → `Get-Service DNS` trên SRV-01 → chỉ bật DNS nếu đã xác nhận `Stopped` → tra lại tên → kiểm tra HTTP. Timeout không đủ để kết luận dịch vụ bị dừng; nếu dịch vụ đã `Running`, bỏ qua thao tác bật và kiểm tra lại từ máy trạm.
+- **Gateway, 7 bước:** xem IP và nguồn DHCP → ping LAN → ping khác mạng → đối chiếu option DHCP trên SRV-01 → giữ DHCP và gia hạn → đọc lại IP/gateway/DNS → ping lại khác mạng. Mẫu này mô phỏng máy trạm còn giữ gateway cũ trong khi option máy chủ đã đúng, không hướng dẫn đổi sang IP tĩnh trong dải DHCP.
+- **Ổ đĩa:** xem dung lượng bằng `Get-Volume`, sau đó kiểm tra danh sách tệp ở bảng Windows Server. `Cache-tam-lab.tmp` được tình huống cho phép xóa; không suy từ đuôi `.tmp` rằng mọi tệp tương tự đều an toàn. Cờ bảo vệ dữ liệu chỉ là cơ chế an toàn của mô phỏng, không phải cơ chế bảo vệ tự động của Windows.
+
+**Chưa đối chiếu với lab Windows Server thật.** Kiểm thử tự động xác nhận hành vi của mã và giao diện, không chứng minh mô phỏng chính xác với hệ điều hành thật. Kế hoạch đối chiếu DNS/DHCP, gateway và ổ đĩa cùng cách ghi nhận sai khác nằm trong tài liệu hướng dẫn tương tác ở trên.
 
 ## Phạm vi và giới hạn
 
@@ -196,6 +256,6 @@ Trạng thái firmware, ổ đĩa, mạng, USB và nguồn dùng chung qua Zusta
 - Mạng cố định `192.168.1.0/24`: router `.1`, máy chủ nội bộ `.10`, IP thuê DHCP `.50`. DNS biết trước: `.1`, `1.1.1.1`, `8.8.8.8`; `example.com` và `uit.edu.vn` có bản ghi minh họa cố định. Chưa mô phỏng cáp hoặc Wi-Fi vật lý.
 - Chuẩn bị GPT tự động xóa toàn bộ phân vùng mô phỏng; chưa có trình chia ổ tùy ý. Schema chỉ có FAT32/NTFS nên MSR dùng NTFS giữ chỗ nhưng không hiển thị filesystem; MSR thật không được format.
 - Chưa mô phỏng cài Office, lắp ráp/sửa phần cứng, máy in hoặc camera.
-- Chưa có tài khoản, lưu phiên bền vững hoặc hạn mức phân tán. Snapshot trợ lý do trình duyệt gửi; cần kiểm soát truy cập và tài nguyên trước khi triển khai công khai. AI bên ngoài chưa được dùng trong kiểm thử tự động.
+- Chưa có tài khoản, lưu phiên bền vững hoặc hạn mức phân tán. Snapshot trợ lý `/pc` vẫn do trình duyệt gửi; phòng hệ thống mới dùng phiên chính trên máy chủ. Cần kiểm soát truy cập và tài nguyên trước khi triển khai công khai. Kiểm thử tích hợp Agent mới dùng mock nhà cung cấp; chưa đánh giá model bên ngoài thực tế.
 
 Word/Excel phục vụ khóa luận, thư viện cài đặt, tệp bí mật và kết quả build được loại khỏi repository bằng `.gitignore`.

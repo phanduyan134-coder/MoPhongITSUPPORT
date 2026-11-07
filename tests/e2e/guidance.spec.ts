@@ -37,7 +37,7 @@ async function prepareAndLoadStorageDriver(page: Page) {
 }
 
 test("guidance is optional and opening it or cancelling a new PC leaves the device unchanged", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   const machine = page.getByRole("region", { name: "Trạng thái máy", exact: true });
   const originalState = await machine.innerText();
   const originalLog = await page.locator(".activity-list").innerText();
@@ -69,7 +69,7 @@ test("guidance is optional and opening it or cancelling a new PC leaves the devi
 });
 
 test("indicating a control only changes the view and highlight", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
   await createBlankPC(page);
   await page.getByRole("checkbox", { name: "Cắm USB cài Windows" }).check();
@@ -94,7 +94,7 @@ test("indicating a control only changes the view and highlight", async ({ page }
 });
 
 test("guidance follows actual USB, firmware, storage, installation and boot changes", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
   await createBlankPC(page);
   const usb = page.getByRole("checkbox", { name: "Cắm USB cài Windows" });
@@ -157,7 +157,7 @@ test("guidance follows actual USB, firmware, storage, installation and boot chan
 });
 
 test("new session resets reinstallation intent without leaving stale guidance", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
   await guidance(page).getByRole("button", { name: "Cài lại trên máy này", exact: true }).click();
   await expectStep(page, "connect-usb");
@@ -175,7 +175,7 @@ test("new session resets reinstallation intent without leaving stale guidance", 
 for (const viewport of [{ name: "desktop", width: 1440, height: 1050 }, { name: "mobile", width: 390, height: 844 }]) {
   test(`${viewport.name} guidance remains usable without horizontal overflow`, async ({ page }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/");
+  await page.goto("/pc");
     await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
     await expect(guidance(page)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);

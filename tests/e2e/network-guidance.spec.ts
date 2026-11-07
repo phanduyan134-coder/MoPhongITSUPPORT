@@ -9,7 +9,7 @@ function machine(page: Page) {
 }
 
 async function openNetworkGuide(page: Page) {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
   await guide(page).getByRole("combobox", { name: "Nội dung hướng dẫn", exact: true }).selectOption("network");
   await expect(guide(page)).toHaveAttribute("data-guide-mode", "network");
@@ -36,7 +36,7 @@ async function setNetworkField(page: Page, field: string, value: string) {
 }
 
 test("choosing network guidance and locating CMD do not change the PC or execute commands", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   const originalState = await machine(page).innerText();
   const originalLog = await page.locator(".activity-list").innerText();
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
@@ -218,7 +218,7 @@ test("starting Windows is a separate action and power changes discard earlier ne
 });
 
 test("switching guidance content preserves Windows reinstall intent and network observations", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/pc");
   await page.getByRole("button", { name: "Hướng dẫn làm cùng", exact: true }).click();
   await guide(page).getByRole("button", { name: "Cài lại trên máy này", exact: true }).click();
   await expectStep(page, "connect-usb");

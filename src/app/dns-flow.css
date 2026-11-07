@@ -1,0 +1,52 @@
+.sl-dns-flow{border-bottom:1px solid #d8e5e9;background:#f7fafb;padding:16px 20px;color:#355868;min-width:0;scroll-margin:20px}
+.sl-dns-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:34px}
+.sl-dns-heading>div{display:flex;align-items:center;gap:8px;min-width:0}
+.sl-dns-heading h3{font-size:13px;font-weight:600;color:#345665}
+.sl-dns-heading>span,.sl-dns-revision{font-size:10px;color:#758990}
+.sl-dns-controls .sl-icon{width:30px;height:30px;color:#517787}
+.sl-tool-heading>.sl-dns-terminal-actions{display:flex;flex:0 0 auto;min-width:0;gap:3px;margin-left:auto}
+.sl-dns-meta{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:6px 0 15px;font-size:10px;color:#758990}
+.sl-dns-meta code{font-size:10px;overflow-wrap:anywhere;color:#526f7c;min-width:0}
+.sl-dns-meta>span{flex-shrink:0}
+.sl-dns-empty{display:flex;align-items:center;gap:10px;min-height:53px;color:#8b9ca4;font-size:12px}
+.sl-dns-empty code{margin-left:auto;font-size:10px;color:#8d9da2}
+.sl-dns-diagram{display:grid;grid-template-columns:minmax(100px,1fr) minmax(100px,1.8fr) minmax(100px,1fr);gap:12px;align-items:center;min-height:116px}
+.sl-dns-node{display:flex;align-items:center;flex-direction:column;gap:5px;min-width:0;text-align:center}
+.sl-dns-node>span{display:grid;place-items:center;width:46px;height:42px;background:#eaf2f6;border:1px solid #cee0e8;border-radius:5px;color:#4c859f}
+.sl-dns-node strong{font-size:11px;font-weight:600;overflow-wrap:anywhere;line-height:1.5}
+.sl-dns-node code{font-size:10px;color:#617a86;overflow-wrap:anywhere}
+.sl-dns-node small{font-size:9px;color:#81949c;overflow-wrap:anywhere;line-height:1.5}
+.sl-dns-resolver>span{background:#eaf4ee;border-color:#cce2d6;color:#4b8e73}
+.sl-dns-lanes{display:flex;flex-direction:column;gap:18px;min-width:0;padding:0 6px}
+.sl-dns-lane{min-width:0;text-align:center;color:#688a9d}
+.sl-dns-lane>span{display:block;min-height:24px;font-size:10px;line-height:1.6;overflow-wrap:anywhere}
+.sl-dns-track{height:2px;background:#b5cfdd;position:relative;margin-top:7px}
+.sl-dns-direction{position:absolute;right:-5px;top:-7px;background:#f7fafb;color:#4f8aa7}
+.sl-dns-response .sl-dns-track{background:#a8cdbc;margin-top:0;margin-bottom:10px}
+.sl-dns-response .sl-dns-direction{left:-5px;right:auto;color:#529b78}
+.sl-dns-response>span{color:#60957e}
+.sl-dns-response.is-silent .sl-dns-track{background:none;border-top:1px dashed #c7cdd0}
+.sl-dns-response.is-silent>span{color:#9a7b5d}
+.sl-dns-packet{display:grid;place-items:center;position:absolute;top:-10px;transform:translateX(-50%);width:25px;height:20px;background:#267da5;border:2px solid #f7fafb;color:#fff;border-radius:4px;z-index:1;box-shadow:0 0 0 2px #cce2ed}
+.sl-dns-response .sl-dns-packet{background:#328367;box-shadow:0 0 0 2px #d6e9df}
+.sl-dns-blocked,.sl-dns-unknown{position:absolute;left:45%;top:-7px;background:#f7fafb;color:#b17b5f}
+.sl-dns-unknown{left:65%;color:#8c8d92}
+.sl-dns-phases{display:flex;gap:14px;flex-wrap:wrap;list-style:none;padding:0;margin:16px 0 12px;font-size:10px;color:#86969d}
+.sl-dns-phases li{display:flex;align-items:center;gap:5px;min-width:0}
+.sl-dns-phases li>span{display:grid;place-items:center;width:17px;height:17px;font-size:9px;border:1px solid #d7e2e6;border-radius:50%;flex-shrink:0}
+.sl-dns-phases .is-current{color:#2d789a}
+.sl-dns-phases .is-current>span{background:#e2eff6;border-color:#94bfd4}
+.sl-dns-phases .is-done{color:#56816d}
+.sl-dns-result{display:flex;align-items:flex-start;gap:8px;border-top:1px solid #dfe9ed;padding-top:12px}
+.sl-dns-result>svg{color:#478c72;flex-shrink:0;margin-top:1px}
+.sl-dns-result strong{font-size:11px;font-weight:600;line-height:1.6}
+.sl-dns-result p{font-size:11px;line-height:1.8;margin-top:4px;color:#69808b;overflow-wrap:anywhere}
+.sl-dns-flow.is-timeout .sl-dns-result>svg,.sl-dns-flow.is-nxdomain .sl-dns-result>svg{color:#a57b4e}
+.sl-dns-flow.is-timeout .sl-dns-phases li:last-child.is-done{color:#a57b4e}
+.sl-dns-flow.is-nxdomain .sl-dns-response>span{color:#a57b4e}
+.sl-dns-flow.is-nxdomain .sl-dns-response .sl-dns-packet{background:#a57b4e}
+.sl-dns-flow footer{display:flex;justify-content:space-between;gap:10px;margin-top:12px;font-size:9px;color:#8a9aa2;line-height:1.6}
+.sl-dns-stale{display:flex;align-items:center;gap:7px;color:#9c784d;background:#faf2e5;border-left:2px solid #d4ae79;padding:8px 10px;margin-bottom:13px;font-size:10px;line-height:1.7}
+.sl-dns-flow.is-stale .sl-dns-diagram{opacity:.65}
+@media(max-width:760px){.sl-dns-flow{padding:13px 15px}.sl-dns-heading h3{font-size:12px}.sl-dns-meta{flex-wrap:wrap;gap:4px;margin-bottom:12px}.sl-dns-meta code{flex-basis:100%}.sl-dns-meta>span{font-size:9px}.sl-dns-diagram{grid-template-columns:minmax(72px,1fr) minmax(80px,1.3fr) minmax(72px,1fr);gap:5px;min-height:126px}.sl-dns-node strong{font-size:10px}.sl-dns-node code{font-size:9px}.sl-dns-node small{font-size:8px}.sl-dns-node>span{width:40px;height:38px}.sl-dns-lanes{padding:0 4px;gap:15px}.sl-dns-lane>span{font-size:9px;min-height:30px}.sl-dns-phases{gap:8px;font-size:9px;margin-top:12px}.sl-dns-result p{font-size:10px}.sl-dns-flow footer{font-size:8px;gap:6px;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.sl-dns-packet{transition:none!important;animation:none!important}}

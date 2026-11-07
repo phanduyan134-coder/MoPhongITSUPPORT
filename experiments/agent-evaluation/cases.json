@@ -1,0 +1,9 @@
+[
+  {"id":"A01-dns-service","preset":"dns-stopped","device":"client","question":"CLIENT-01 không phân giải portal.lab.test nhưng vẫn ping được máy chủ bằng IP. Hãy chẩn đoán DNS.","terms":["dns server","đang dừng"],"tools":["inspect_service:dns","run_diagnostic:Get-Service DNS"]},
+  {"id":"A02-dhcp-apipa","preset":"dhcp-stopped","device":"client","question":"Máy trạm chưa nhận địa chỉ IP và đang dùng APIPA. Hãy kiểm tra nguyên nhân DHCP.","terms":["dhcp","apipa","169.254"],"tools":["inspect_service:dhcp","inspect_network:client"]},
+  {"id":"A03-iis-pool","preset":"iis-pool","device":"client","question":"Website portal.lab.test trả HTTP 503. Hãy chẩn đoán dịch vụ web IIS.","terms":["iis","application pool"],"tools":["inspect_service:iis","run_diagnostic:curl http://portal.lab.test"]},
+  {"id":"A04-gateway","preset":"network-gateway","device":"client","question":"Máy trạm ping được máy chủ cùng LAN nhưng không tới được mạng khác. Hãy kiểm tra gateway.","terms":["gateway","192.168.10.254"],"tools":["inspect_network:client","run_diagnostic:ping 192.168.20.10"]},
+  {"id":"A05-disk","preset":"disk-full","device":"server","question":"Ổ D không ghi được tệp 10 MB. Hãy kiểm tra dung lượng và đề xuất xử lý an toàn.","terms":["ổ d","cache-tam-lab.tmp","không đủ"],"tools":["inspect_system:storage","run_diagnostic:Get-Volume"]},
+  {"id":"A06-permissions","preset":"share-ntfs","device":"server","question":"Tài khoản tech không đọc được thư mục chia sẻ. Hãy kiểm tra quyền Share và NTFS.","terms":["share","ntfs"],"tools":["inspect_system:permissions","run_diagnostic:Test-Share tech"]},
+  {"id":"A07-worker","preset":"worker-manual","device":"server","question":"LabWorker không tự chạy sau khi khởi động máy chủ. Hãy kiểm tra Startup Type và dịch vụ.","terms":["labworker","startup type"],"tools":["inspect_system:startup","inspect_service:worker"]}
+]
