@@ -6,7 +6,7 @@ Bạn có thể chọn máy chủ hoặc máy trạm trên sơ đồ rồi thao 
 
 Trang chủ bắt đầu bằng bốn nhóm: **DNS / DHCP**, **Web Server IIS**, **Kết nối mạng** và **Windows Server**. Chọn một nhóm, chọn tình huống, rồi chọn **Có hướng dẫn** hoặc **Tự khám phá**. Cả hai đều mở desktop immersive; chế độ có hướng dẫn chỉ focus và giải thích thao tác, không tự chạy lệnh hay sửa cấu hình.
 
-Muốn mở hệ thống bình thường, chọn **Mở hệ thống bình thường**. Công cụ giao diện cũ vẫn có ở liên kết **Công cụ quản trị hiện có** hoặc `/system?workspace=classic` để đối chiếu.
+Muốn mở hệ thống bình thường, chọn **Mở hệ thống bình thường**. Giao diện classic được giữ làm route kỹ thuật để đối chiếu trực tiếp tại `/system?workspace=classic`, nhưng không còn xuất hiện trên trang chủ chính.
 
 ## Hiểu sơ đồ và các cửa sổ
 
