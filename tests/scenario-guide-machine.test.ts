@@ -173,6 +173,18 @@ test("gateway guidance checks DHCP options, renews without static IP and recheck
   actor.stop();
 });
 
+test("gateway route step needs the correct destination and a working LAN path", () => {
+  const actor = startGuide("gateway");
+  const state = createSimulation("network-gateway");
+  diagnostic(actor, state, "ipconfig /all");
+  diagnostic(actor, state, "ping 192.168.10.10");
+  assertStep(actor, "gateway-check-route");
+
+  diagnostic(actor, state, "ping 192.168.20.10");
+  assertStep(actor, "gateway-inspect-options");
+  actor.stop();
+});
+
 test("gateway options check rejects wrong devices, wrong DHCP options and a static client", () => {
   const actor = startGuide("gateway");
   const state = createSimulation("network-gateway");

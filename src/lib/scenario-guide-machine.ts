@@ -140,6 +140,11 @@ export function getScenarioGuideStep(context: ScenarioGuideContext): ScenarioGui
 const normalizeCommand = (command: string) => command.trim().toLowerCase().replace(/\s+/g, " ");
 const pingSucceeded = (state: Simulation, target: string) =>
   runSimulationDiagnostic(state, "client", `ping ${target}`).includes("Received = 4, Lost = 0 (0% loss)");
+const gatewayRouteChecked = (state: Simulation) => {
+  const output = runSimulationDiagnostic(state, "client", "ping 192.168.20.10");
+  return output.includes("Received = 4, Lost = 0 (0% loss)")
+    || (output.includes("Request timed out.") && pingSucceeded(state, state.server.ip));
+};
 const dnsSucceeded = (state: Simulation) =>
   runSimulationDiagnostic(state, "client", "nslookup portal.lab.test").includes(`\nAddress: ${state.server.ip}`);
 const httpSucceeded = (state: Simulation) =>
@@ -187,7 +192,7 @@ function diagnosticSucceeded(step: ScenarioGuideStep, state: Simulation): boolea
     }
     case "iis-verify-http": return httpSucceeded(state);
     case "gateway-check-lan": return pingSucceeded(state, state.server.ip);
-    case "gateway-check-route": return pingSucceeded(state, state.server.ip);
+    case "gateway-check-route": return gatewayRouteChecked(state);
     case "gateway-inspect-options": return state.client.dhcp && state.roles.dhcp && state.dhcp.running && state.dhcp.active
       && state.dhcp.gateway === state.server.gateway && state.dhcp.dns === state.server.ip
       && runSimulationDiagnostic(state, "server", step.command!).startsWith("ScopeId: 192.168.10.0\n");
