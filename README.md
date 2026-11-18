@@ -6,10 +6,6 @@ SupportLab dành cho người học cấu hình và xử lý sự cố hệ th�
 
 Ứng dụng dùng **dữ liệu trạng thái và các quy tắc xử lý** để tái hiện phản ứng của hệ thống. Thay đổi cấu hình sẽ làm thay đổi kết quả kiểm tra. Windows Server thật chỉ chạy trong máy ảo riêng phục vụ đối chiếu; sử dụng Web không cần bật máy ảo và không thay đổi cấu hình laptop.
 
-**Tài liệu để xem nhanh:** [Cách sử dụng desktop](docs/giao-dien-desktop-mo-phong.md) · [Ma trận chấp nhận bốn nhóm](docs/kiem-chung/ma-tran-chap-nhan.md) · [Tiêu chí đánh giá AI Agent](docs/kiem-chung/danh-gia-agent.md) · [Biên bản đối chiếu DNS D02](docs/lab-tham-chieu/windows-dns/KET-QUA-DOI-CHIEU-D02-2026-11-02.md).
-
-![Desktop máy chủ SRV-01: kiểm tra dịch vụ DNS trong Services, phía trên là sơ đồ CLIENT-01 — SW-01 — SRV-01](docs/images/desktop-dns-services.png)
-
 ## Đáp ứng các yêu cầu của đề tài
 
 | Yêu cầu | Cách triển khai trong bản mẫu | Trạng thái và phần còn cần đánh giá |
@@ -41,8 +37,6 @@ Ví dụ với **Không phân giải được tên nội bộ**:
 4. Quay lại CLIENT-01, chạy lại truy vấn và mở `http://portal.lab.test` trong trình duyệt mô phỏng để xác nhận phục hồi.
 5. Mở **Trợ lý AI** để xem chẩn đoán/công cụ, rồi bấm **Xuất hồ sơ phiên** trong bảng trợ lý để lưu JSON có nhật ký và trace.
 
-![Desktop CLIENT-01: trình duyệt mô phỏng nhận HTTP 200 sau khi DNS trên SRV-01 được bật lại](docs/images/desktop-dns-client.png)
-
 Hướng dẫn dùng XState để theo dõi bằng chứng người dùng tự tạo, focus vị trí thao tác và giải thích bước tiếp theo. Người dùng tự chạy lệnh và áp dụng cấu hình. Khi cấu hình đổi, kết quả cũ được đánh dấu cần kiểm tra lại. Hướng dẫn focus hoạt động độc lập với model AI.
 
 ## AI Agent hoạt động như thế nào?
@@ -67,11 +61,11 @@ Quy trình hỗ trợ là **quan sát → khoanh vùng → tra cứu → hướn
 | Đánh giá model AI thật | Chưa có kết quả nghiên cứu; đã có rubric và cách ghi trace/bằng chứng. |
 | Đánh giá hiệu quả với người dùng | Chưa thực hiện; cần thiết kế thực nghiệm và điều kiện so sánh với giảng viên. |
 
-Kết quả D02 đang ở trạng thái **đã rà bằng công cụ, chờ giảng viên/người thực hiện kiểm tra độc lập**. Lab dùng IP tĩnh và không gateway, còn Web dùng DHCP/gateway; ca này chưa xác nhận DHCP hoặc định tuyến. Thông báo lỗi, thời gian, mã thoát và HTML cũng có khác biệt được ghi trong [biên bản D02](docs/lab-tham-chieu/windows-dns/KET-QUA-DOI-CHIEU-D02-2026-11-02.md).
+Kết quả D02 và hồ sơ lab được lưu riêng ngoài repository mã nguồn. Bản mô phỏng Web không cần dữ liệu lab để khởi động.
 
-[Bộ kiểm chứng](docs/kiem-chung/README.md) liên kết ma trận chấp nhận, rubric Agent và phiếu lab. Nút **Xuất hồ sơ phiên** trong Trợ lý AI tải JSON gồm trạng thái đầu/cuối, thao tác, kết quả chẩn đoán và trace trợ lý. Nút **Xuất trạng thái phiên** trên thanh trên cùng chỉ tải snapshot cấu hình. Nhật ký có giới hạn dung lượng và ghi dấu khi bị lược bỏ; tệp xuất chưa hỗ trợ nhập lại phiên.
+Nút **Xuất hồ sơ phiên** trong Trợ lý AI tải JSON gồm trạng thái đầu/cuối, thao tác, kết quả chẩn đoán và trace trợ lý. Nút **Xuất trạng thái phiên** trên thanh trên cùng chỉ tải snapshot cấu hình. Nhật ký có giới hạn dung lượng và ghi dấu khi bị lược bỏ; tệp xuất chưa hỗ trợ nhập lại phiên.
 
-Bằng chứng thô, ảnh lab, VM và ISO trong `output/` được lưu riêng trên máy, **không nằm trên GitHub**. Repository chứa mã nguồn, ảnh giới thiệu và báo cáo diễn giải; clone mã nguồn không tự có dữ liệu lab để chạy đối chiếu.
+Bằng chứng thô, ảnh lab, VM và ISO trong `output/` được lưu riêng trên máy, **không nằm trên GitHub**. Repository này chỉ chứa mã nguồn, cấu hình chạy và kiểm thử kỹ thuật.
 
 ## Cài đặt và chạy
 
@@ -100,7 +94,7 @@ OPENAI_MODEL=
 OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-Khởi động lại ứng dụng sau khi cấu hình. Model không được chọn mặc định; khóa chỉ dùng ở máy chủ ứng dụng và không commit vào Git. Xem [rubric đánh giá Agent](docs/kiem-chung/danh-gia-agent.md) để phân biệt đánh giá model thật với chế độ cục bộ.
+Khởi động lại ứng dụng sau khi cấu hình. Model không được chọn mặc định; khóa chỉ dùng ở máy chủ ứng dụng và không commit vào Git. Hồ sơ đánh giá model được lưu riêng ngoài repository mã nguồn.
 
 </details>
 
@@ -118,7 +112,7 @@ Playwright dùng cổng `3100`, thư mục `.next-e2e` và trợ lý cục bộ.
 
 | Lệnh | Mục đích | Điều kiện và tài liệu |
 | --- | --- | --- |
-| `npm run pilot:dns` | Kiểm tra D01–D05 trong engine theo thao tác tham chiếu. | Không cần API/VM. [Pilot DNS](experiments/dns-pilot/README.md). |
+| `npm run pilot:dns` | Kiểm tra D01–D05 trong engine theo thao tác tham chiếu. | Không cần API/VM. |
 | `npm run compare:dns` | So sánh mô phỏng hiện tại với log lab D02 đã lưu. | Cần bản sao bằng chứng cục bộ trong `output/`; lệnh dừng nếu thiếu dữ liệu, không khởi động VM. [Đối chiếu DNS](experiments/dns-reference/README.md). |
 | `npm run evaluate:agent` | Kiểm tra phản hồi và trace của trợ lý quy tắc cục bộ. | Không gọi model AI thật. [Đánh giá cục bộ](experiments/agent-evaluation/README.md). |
 
@@ -137,13 +131,5 @@ Playwright dùng cổng `3100`, thư mục `.next-e2e` và trợ lý cục bộ.
 Bản mẫu giới hạn IPv4, một bản ghi DNS, một scope DHCP, IIS HTTP, quyền đọc Share/NTFS cho danh tính mẫu, ổ dữ liệu D: và LabWorker. Chưa có AD DS/domain, DNS zone/cache/forwarder đầy đủ, HTTPS hoặc toàn bộ giao diện Windows. Lệnh PowerShell và trình duyệt chỉ hỗ trợ các thao tác mô phỏng đã định nghĩa. Chất lượng mô phỏng ngoài ca D02 còn cần đối chiếu thêm.
 
 Phiên lưu trong RAM của một tiến trình, hết hạn sau 2 giờ không hoạt động, tối đa 200 phiên. Tải lại trang hoặc tạo phiên mới đặt lại dữ liệu; chưa có tài khoản, lưu phiên bền vững, nhập lại JSON hay lưu trữ phiên dùng chung giữa nhiều instance.
-
-## Tài liệu bổ sung và mô-đun cũ
-
-- [Giải thích phần mềm cho người mới](docs/giai-thich-phan-mem.md).
-- [Hướng dẫn desktop và các công cụ](docs/giao-dien-desktop-mo-phong.md).
-- [Kế hoạch chỉnh sửa theo góp ý giảng viên](docs/ke-hoach-chinh-sua/README.md).
-- [Lab tham chiếu Windows DNS](docs/lab-tham-chieu/windows-dns/README.md).
-- [Mô-đun cài Windows trước đây](docs/mo-dun-cai-windows.md): cách dùng `/pc`, BIOS, USB/driver, sổ tay và hồ sơ ASUS. Nội dung được giữ để tham khảo, nằm ngoài trọng tâm bốn nhóm của bản hiện tại.
 
 Luồng chính luôn mở desktop mới. Giao diện classic chỉ giữ tại `/system?workspace=classic` để đối chiếu kỹ thuật và đã ẩn liên kết khỏi trang chủ. Tài liệu Word/Excel cá nhân, API key, thư viện cài đặt, bản build và dữ liệu `output/` được loại khỏi repository bằng `.gitignore`.
