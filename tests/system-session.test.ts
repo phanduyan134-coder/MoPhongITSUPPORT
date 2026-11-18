@@ -184,6 +184,21 @@ test("local assistant uses reported system symptoms even for a generic help requ
   } finally { if (old === undefined) delete process.env.SUPPORTLAB_AI_ENABLED; else process.env.SUPPORTLAB_AI_ENABLED = old; }
 });
 
+test("local DNS assistant records its own service and HTTP observations separately from fixed verification", async () => {
+  const old = process.env.SUPPORTLAB_AI_ENABLED;
+  process.env.SUPPORTLAB_AI_ENABLED = "false";
+  try {
+    const initial = systemSessions.create("dns-stopped");
+    const response = await agentPost(request("system-agent", { sessionId: initial.sessionId, device: "client", history: [{ role: "user", content: "CLIENT-01 không phân giải portal.lab.test; chẩn đoán DNS" }] }));
+    const result = await response.json();
+    assert.equal(result.source, "local");
+    assert.ok(result.trace.some((entry: { tool: string; origin: string; summary: string }) => entry.origin === "local" && entry.tool === "run_diagnostic" && entry.summary.startsWith("server > Get-Service DNS")));
+    assert.ok(result.trace.some((entry: { tool: string; origin: string; summary: string }) => entry.origin === "local" && entry.tool === "run_diagnostic" && entry.summary.startsWith("client > curl http://portal.lab.test")));
+    assert.ok(result.trace.some((entry: { tool: string; origin: string }) => entry.origin === "verification"));
+    assert.deepEqual(systemSessions.get(initial.sessionId).state, initial.state);
+  } finally { if (old === undefined) delete process.env.SUPPORTLAB_AI_ENABLED; else process.env.SUPPORTLAB_AI_ENABLED = old; }
+});
+
 test("local assistant checks DHCP Router options and renews without forcing a static address", async () => {
   const old = process.env.SUPPORTLAB_AI_ENABLED;
   process.env.SUPPORTLAB_AI_ENABLED = "false";
@@ -196,6 +211,7 @@ test("local assistant checks DHCP Router options and renews without forcing a st
     assert.match(result.message, /Tùy chọn Router đã đúng; giữ DHCP.*Gia hạn DHCP/);
     assert.match(result.message, /Không chuyển sang IP tĩnh trong dải cấp DHCP/);
     assert.ok(result.trace.some((entry: { tool: string; summary: string }) => entry.tool === "run_diagnostic" && entry.summary.includes("server > Get-DhcpServerv4OptionValue -ScopeId 192.168.10.0")));
+    assert.ok(result.trace.some((entry: { tool: string; summary: string }) => entry.tool === "run_diagnostic" && entry.summary.includes("client > ping 192.168.20.10")));
     assert.deepEqual(systemSessions.get(initial.sessionId).state, initial.state);
 
     const { start, end, dns, active } = initial.state.dhcp;
@@ -203,6 +219,20 @@ test("local assistant checks DHCP Router options and renews without forcing a st
     const wrongOption = await (await ask()).json();
     assert.match(wrongOption.message, /Tùy chọn Router hiện là 192\.168\.10\.254; sửa thành 192\.168\.10\.1 trong scope trước, rồi gia hạn DHCP/);
     assert.deepEqual(systemSessions.get(initial.sessionId).state, updated.state);
+  } finally { if (old === undefined) delete process.env.SUPPORTLAB_AI_ENABLED; else process.env.SUPPORTLAB_AI_ENABLED = old; }
+});
+
+test("local assistant selects focused evidence for share permissions and service startup faults", async () => {
+  const old = process.env.SUPPORTLAB_AI_ENABLED;
+  process.env.SUPPORTLAB_AI_ENABLED = "false";
+  try {
+    const permissions = systemSessions.create("share-ntfs");
+    const permissionResult = await (await agentPost(request("system-agent", { sessionId: permissions.sessionId, device: "server", history: [{ role: "user", content: "Kiểm tra quyền Share và NTFS" }] }))).json();
+    assert.ok(permissionResult.trace.some((entry: { tool: string; summary: string }) => entry.tool === "run_diagnostic" && entry.summary.includes("client > Test-Share tech")));
+
+    const worker = systemSessions.create("worker-manual");
+    const workerResult = await (await agentPost(request("system-agent", { sessionId: worker.sessionId, device: "server", history: [{ role: "user", content: "Kiểm tra LabWorker và Startup Type" }] }))).json();
+    assert.ok(workerResult.trace.some((entry: { tool: string; summary: string }) => entry.tool === "inspect_service" && entry.summary.startsWith("worker:")));
   } finally { if (old === undefined) delete process.env.SUPPORTLAB_AI_ENABLED; else process.env.SUPPORTLAB_AI_ENABLED = old; }
 });
 

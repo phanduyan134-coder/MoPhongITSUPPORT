@@ -2,8 +2,8 @@ import { assign, createMachine } from "xstate";
 import { freeSpaceMB, runSimulationDiagnostic, type DeviceId, type Simulation } from "./system-simulator";
 import type { SystemView } from "./system-store";
 
-export type ScenarioGuideId = "dhcp" | "iis" | "gateway" | "disk";
-export type ScenarioGuideTarget = "dhcp-running" | "client-renew" | "iis-pool" | "client-gateway" | "disk-cleanup" | "disk-write";
+export type ScenarioGuideId = "dns-record" | "dhcp" | "iis" | "gateway" | "disk";
+export type ScenarioGuideTarget = "dns-record" | "dhcp-running" | "client-renew" | "iis-pool" | "client-gateway" | "disk-cleanup" | "disk-write";
 export type ScenarioGuideStep = {
   id: string;
   label: string;
@@ -20,6 +20,32 @@ export type ScenarioGuideStep = {
 type ScenarioGuide = { label: string; presetId: string; steps: ScenarioGuideStep[] };
 
 export const scenarioGuides: Record<ScenarioGuideId, ScenarioGuide> = {
+  "dns-record": {
+    label: "DNS · Bản ghi A",
+    presetId: "dns-record",
+    steps: [
+      { id: "dns-record-check-ip", label: "Kiểm tra LAN", title: "Bước 1/5 · Kiểm tra kết nối IP", view: "terminal", device: "client", command: "ping 192.168.10.10",
+        text: "Ping SRV-01 từ CLIENT-01 để xác nhận lỗi không nằm ở kết nối IP.",
+        why: "Nếu IP cùng LAN vẫn phản hồi, có thể kiểm tra riêng câu trả lời DNS thay vì sửa card mạng hoặc gateway.",
+        expected: "Nhận Reply from 192.168.10.10 với 0% mất gói." },
+      { id: "dns-record-check-answer", label: "Đọc bản ghi", title: "Bước 2/5 · Kiểm tra câu trả lời DNS", view: "terminal", device: "client", command: "nslookup portal.lab.test",
+        text: "Truy vấn portal.lab.test từ CLIENT-01 và đọc địa chỉ trả về.",
+        why: "DNS đang trả lời nhưng có thể trỏ sai đích. Trường hợp này khác với dịch vụ DNS bị dừng hoặc tên không tồn tại.",
+        expected: "Quan sát portal.lab.test trả về 192.168.10.99, khác IP SRV-01 là 192.168.10.10." },
+      { id: "dns-record-repair", label: "Sửa bản ghi A", title: "Bước 3/5 · Cập nhật bản ghi portal", view: "dns-dhcp", target: "dns-record",
+        text: "Mở DNS Manager trên SRV-01, chọn bản ghi portal trong zone lab.test, đặt IPv4 address là 192.168.10.10 rồi bấm Apply.",
+        why: "DNS service vẫn hoạt động; chỉ dữ liệu bản ghi A đang sai. Không cần dừng/bật lại dịch vụ DNS hoặc đổi cấu hình DHCP.",
+        expected: "Bản ghi portal.lab.test được lưu với địa chỉ 192.168.10.10." },
+      { id: "dns-record-verify-answer", label: "Xác minh DNS", title: "Bước 4/5 · Truy vấn lại bản ghi", view: "terminal", device: "client", command: "nslookup portal.lab.test",
+        text: "Chạy lại nslookup trên CLIENT-01 sau khi Apply để lấy bằng chứng mới.",
+        why: "Cấu hình nháp trong DNS Manager chưa phải bằng chứng. Cần truy vấn lại từ máy trạm trên revision mới.",
+        expected: "Name: portal.lab.test và Address: 192.168.10.10." },
+      { id: "dns-record-verify-http", label: "Kiểm tra website", title: "Bước 5/5 · Xác minh truy cập theo tên", view: "terminal", device: "client", command: "curl http://portal.lab.test",
+        text: "Kiểm tra HTTP theo tên miền để xác nhận bản ghi đúng và website vẫn hoạt động.",
+        why: "DNS trả đúng IP chưa tự chứng minh IIS hoạt động. Phép kiểm HTTP xác nhận luồng sử dụng bản ghi vừa sửa.",
+        expected: "Nhận HTTP/1.1 200 OK." },
+    ],
+  },
   dhcp: {
     label: "DHCP",
     presetId: "dhcp-stopped",
@@ -140,10 +166,15 @@ export function getScenarioGuideStep(context: ScenarioGuideContext): ScenarioGui
 const normalizeCommand = (command: string) => command.trim().toLowerCase().replace(/\s+/g, " ");
 const pingSucceeded = (state: Simulation, target: string) =>
   runSimulationDiagnostic(state, "client", `ping ${target}`).includes("Received = 4, Lost = 0 (0% loss)");
+const dnsWrongAnswer = (state: Simulation) =>
+  runSimulationDiagnostic(state, "client", "nslookup portal.lab.test").includes("Address: 192.168.10.99");
+const dnsCorrectAnswer = (state: Simulation) =>
+  runSimulationDiagnostic(state, "client", "nslookup portal.lab.test").includes(`Address: ${state.server.ip}`);
 const gatewayRouteChecked = (state: Simulation) => {
   const output = runSimulationDiagnostic(state, "client", "ping 192.168.20.10");
-  return output.includes("Received = 4, Lost = 0 (0% loss)")
-    || (output.includes("Request timed out.") && pingSucceeded(state, state.server.ip));
+  const routeProbeObserved = output.includes("Received = 4, Lost = 0 (0% loss)")
+    || output.includes("Request timed out.");
+  return routeProbeObserved && pingSucceeded(state, state.server.ip);
 };
 const dnsSucceeded = (state: Simulation) =>
   runSimulationDiagnostic(state, "client", "nslookup portal.lab.test").includes(`\nAddress: ${state.server.ip}`);
@@ -166,6 +197,7 @@ function protectedDataIntact(state: Simulation): boolean {
 
 function targetSatisfied(target: ScenarioGuideTarget, state: Simulation): boolean {
   switch (target) {
+    case "dns-record": return state.roles.dns && state.dns.running && state.dns.record === state.server.ip;
     case "dhcp-running": return state.roles.dhcp && state.dhcp.running && state.dhcp.active;
     case "client-renew": return hasValidLease(state);
     case "iis-pool": return state.roles.iis && state.iis.siteRunning && state.iis.poolRunning && state.iis.port === 80;
@@ -179,6 +211,10 @@ function targetSatisfied(target: ScenarioGuideTarget, state: Simulation): boolea
 
 function diagnosticSucceeded(step: ScenarioGuideStep, state: Simulation): boolean {
   switch (step.id) {
+    case "dns-record-check-ip": return pingSucceeded(state, state.server.ip);
+    case "dns-record-check-answer": return dnsWrongAnswer(state);
+    case "dns-record-verify-answer": return dnsCorrectAnswer(state);
+    case "dns-record-verify-http": return httpSucceeded(state);
     case "dhcp-inspect-ip":
     case "gateway-inspect-ip":
     case "disk-inspect-volume": return true;

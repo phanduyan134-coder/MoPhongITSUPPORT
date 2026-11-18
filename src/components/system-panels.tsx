@@ -71,7 +71,10 @@ export function DnsDhcpTools({ focusDnsStart = false, focusRequest = 0, guideNot
   const s = state!;
   const dnsToggle = useRef<HTMLInputElement>(null);
   const dhcpToggle = useRef<HTMLInputElement>(null);
+  const dnsRecordInput = useRef<HTMLInputElement>(null);
+  const dnsRecordSave = useRef<HTMLButtonElement>(null);
   const guideDhcp = guideTarget === "dhcp-running";
+  const guideDnsRecord = guideTarget === "dns-record";
   const [address, setAddress] = useState(s.dns.record || "");
   const [scope, setScope] = useState({ start: s.dhcp.start, end: s.dhcp.end, gateway: s.dhcp.gateway, dns: s.dhcp.dns, active: s.dhcp.active });
   useEffect(() => { setAddress(s.dns.record || ""); }, [s.dns.record]);
@@ -84,6 +87,10 @@ export function DnsDhcpTools({ focusDnsStart = false, focusRequest = 0, guideNot
   useEffect(() => {
     if (guideDhcp && !s.dhcp.running) focusGuideControl(dhcpToggle.current);
   }, [guideDhcp, focusRequest, s.dhcp.running]);
+  useEffect(() => {
+    if (!guideDnsRecord) return;
+    focusGuideControl(address === s.server.ip ? dnsRecordSave.current : dnsRecordInput.current);
+  }, [guideDnsRecord, focusRequest, address, s.server.ip]);
   return <section aria-label="DNS và DHCP Server">
     <ToolHeading icon={<Server size={21} />} title="DNS / DHCP Server" subtitle="SRV-01 · Windows Server 2022" />
     {!guideDhcp && guideNote}
@@ -92,8 +99,9 @@ export function DnsDhcpTools({ focusDnsStart = false, focusRequest = 0, guideNot
       <div className={(role === "dns" && focusDnsStart && !s.dns.running) || (role === "dhcp" && guideDhcp && !s.dhcp.running) ? "sl-guide-focus" : ""}><div><strong>{role.toUpperCase()} Server</strong><span>{s.roles[role] ? "Role đã cài đặt" : "Chưa cài role"}</span></div>{s.roles[role] ? <label className="sl-check"><input ref={role === "dns" ? dnsToggle : dhcpToggle} type="checkbox" aria-label={role.toUpperCase() + " đang chạy"} aria-describedby={role === "dns" && focusDnsStart ? "dns-guide-target" : role === "dhcp" && guideDhcp ? "scenario-guide-target" : undefined} checked={s[role].running} disabled={busy} onChange={(e) => void act({ type: "service.toggle", service: role, running: e.target.checked })} /><Status on={s[role].running} /></label> : <button className="sl-button" disabled={busy} onClick={() => void act({ type: "role.install", role })}><Plus size={15} />Cài {role.toUpperCase()}</button>}</div>
     </Fragment>)}</div>
     <div className="sl-subsection"><h3>DNS Manager <span>Forward Lookup Zone · lab.test</span></h3>
+      {guideDnsRecord && guideNote}
       <form onSubmit={(e) => { e.preventDefault(); void act({ type: "dns.record", address }); }}><fieldset disabled={busy || !s.roles.dns}>
-        <div className="sl-record-row"><div><strong>portal.lab.test</strong><span>Host (A)</span></div><label>Địa chỉ IPv4<input aria-label="Địa chỉ bản ghi A" required value={address} placeholder="192.168.10.10" onChange={(e) => setAddress(e.target.value)} /></label><button type="submit" className="sl-button" aria-label="Lưu bản ghi DNS"><Save size={15} />Lưu bản ghi</button></div>
+        <div className="sl-record-row"><div><strong>portal.lab.test</strong><span>Host (A)</span></div><label className={guideDnsRecord && address !== s.server.ip ? "sl-guide-focus" : undefined}>Địa chỉ IPv4<input ref={dnsRecordInput} aria-label="Địa chỉ bản ghi A" aria-describedby={guideDnsRecord ? "scenario-guide-target" : undefined} required value={address} placeholder="192.168.10.10" onChange={(e) => setAddress(e.target.value)} /></label><button ref={dnsRecordSave} type="submit" className={"sl-button" + (guideDnsRecord && address === s.server.ip ? " sl-guide-focus" : "")} aria-describedby={guideDnsRecord ? "scenario-guide-target" : undefined} aria-label="Lưu bản ghi DNS"><Save size={15} />Lưu bản ghi</button></div>
       </fieldset></form>
     </div>
     <div className="sl-subsection"><h3>DHCP Manager <span>Scope · LAN-10</span></h3>

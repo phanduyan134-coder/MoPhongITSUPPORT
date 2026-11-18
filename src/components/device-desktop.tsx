@@ -74,18 +74,30 @@ function ServerManager({ open, guideApp }: AppProps) {
   </div><div className="wd-manager"><aside className="wd-tree"><strong>Server Manager</strong><button aria-current="page">Dashboard</button><span>Local Server</span><span>All Servers</span></aside><div className="wd-content"><h3>Welcome to Server Manager</h3><p>Máy chủ SRV-01 · Windows Server 2022 · Workgroup</p><div className="wd-toolbar"><button onClick={() => setManage(!manage)}>Add roles and features</button></div>{manage && <div className="wd-role-wizard"><h3>Add Roles and Features · Server Roles</h3><p>Chọn role cần cài trên SRV-01. Bản mô phỏng rút gọn các màn hình xác nhận của trình cài role.</p>{(["dns", "dhcp", "iis"] as const).map((role) => <div key={role}><span>{role === "iis" ? "Web Server (IIS)" : role.toUpperCase() + " Server"}</span><button disabled={busy || state!.roles[role]} onClick={() => void act({ type: "role.install", role })}>{state!.roles[role] ? "Installed" : "Add " + role.toUpperCase() + " role"}</button></div>)}</div>}<div className="wd-role-tiles">{(["dns", "dhcp", "iis"] as const).map((role) => <div key={role}><strong>{role === "iis" ? "IIS" : role.toUpperCase()}</strong><span>{state!.roles[role] ? "Installed" : "Not installed"}</span></div>)}</div><p className="wd-hint">Mở menu Tools ở góc phải để vào DNS, DHCP, Services hoặc IIS Manager. Cấu hình trên máy chủ sẽ tác động các phép kiểm từ CLIENT-01.</p></div></div></>;
 }
 
-function DnsManager({ window, setDraft }: AppProps) {
+function DnsManager({ window, setDraft, guideTarget, focusRequest }: AppProps) {
   const { state, act, busy } = useSystemLab();
   const s = state!;
   const [editing, setEditing] = useState(false);
   const [selected, setSelected] = useState(false);
   const level = Number(window.draft.level ?? 0);
+  const guideRecord = guideTarget === "dns-record";
+  useEffect(() => {
+    if (!guideRecord) return;
+    if (level < 3) setDraft("level", "3");
+    setSelected(true);
+  }, [guideRecord, focusRequest, level, setDraft]);
   async function save(event: FormEvent) {
     event.preventDefault();
     await act({ type: "dns.record", address: window.draft.address ?? s.dns.record ?? "" });
+    // In guided mode the next step switches this desktop window to CLIENT-01.
+    // Close the modal after a successful Apply so its portal backdrop cannot
+    // block the learner's next terminal command. In free exploration, keep
+    // normal Windows Properties semantics: Apply saves while the dialog stays
+    // open until OK or Cancel.
+    if (guideRecord && !useSystemLab.getState().error) setEditing(false);
   }
   function properties() { setDraft("address", s.dns.record ?? ""); setEditing(true); }
-  return <><div className="wd-app-menu">File <span>Action</span><span>View</span><span>Help</span></div><div className="wd-manager"><aside className="wd-tree" aria-label="DNS console tree"><strong><Network size={16} />DNS</strong><button aria-label="SRV-01" aria-expanded={level >= 1} onClick={() => setDraft("level", level >= 1 ? "0" : "1")}>{level >= 1 ? "⌄" : "›"} SRV-01</button>{level >= 1 && <button aria-label="Forward Lookup Zones" aria-expanded={level >= 2} onClick={() => setDraft("level", level >= 2 ? "1" : "2")}>{level >= 2 ? "⌄" : "›"} Forward Lookup Zones</button>}{level >= 2 && <button aria-current={level >= 3 ? "page" : undefined} onClick={() => setDraft("level", "3")}>lab.test</button>}</aside><div className="wd-content"><div className="wd-toolbar"><h3>{level >= 3 ? "lab.test" : "DNS Manager"}</h3><span className={"wd-status " + (!s.dns.running || !s.roles.dns ? "is-stopped" : "")}>{!s.roles.dns ? "Role chưa cài" : s.dns.running ? "DNS Running" : "DNS Stopped"}</span></div>{level < 3 ? <p>Mở SRV-01 → Forward Lookup Zones → lab.test trong cây bên trái để xem bản ghi.</p> : <><div className="wd-table"><table><thead><tr><th>Name</th><th>Type</th><th>Data</th></tr></thead><tbody><tr aria-selected={selected} onDoubleClick={() => s.roles.dns && properties()}><td><button disabled={!s.roles.dns} onClick={() => setSelected(true)}>portal</button></td><td>Host (A)</td><td>{s.dns.record || "Chưa tạo"}</td></tr></tbody></table></div><div className="wd-toolbar"><button disabled={!selected || !s.roles.dns} onClick={properties}>Properties</button></div><p>Chọn portal rồi Properties, hoặc nhấp đúp dòng bản ghi để mở thuộc tính.</p></>}</div></div>{editing && <Dialog labelId="dns-record-properties-title" onClose={() => setEditing(false)}><form className="wd-form wd-properties-dialog" onSubmit={save}><h2 id="dns-record-properties-title">portal Properties</h2><span className="wd-properties-tab">Host (A)</span><label>Fully qualified domain name<input value="portal.lab.test" readOnly /></label><label>IPv4 address<input aria-label="IPv4 address" value={window.draft.address ?? ""} onChange={(event) => setDraft("address", event.target.value)} required maxLength={15} spellCheck={false} autoFocus /></label><p>Apply lưu bản ghi trên SRV-01. Sau đó chạy lại nslookup từ CLIENT-01.</p><div className="modal-actions"><button type="button" onClick={() => setEditing(false)}>Cancel</button><button type="submit" disabled={busy || !s.roles.dns}>Apply</button><button type="button" disabled={busy || !s.roles.dns} onClick={async () => { await act({ type: "dns.record", address: window.draft.address ?? "" }); if (!useSystemLab.getState().error) setEditing(false); }}>OK</button></div></form></Dialog>}</>;
+  return <><div className="wd-app-menu">File <span>Action</span><span>View</span><span>Help</span></div><div className="wd-manager"><aside className="wd-tree" aria-label="DNS console tree"><strong><Network size={16} />DNS</strong><button aria-label="SRV-01" aria-expanded={level >= 1} onClick={() => setDraft("level", level >= 1 ? "0" : "1")}>{level >= 1 ? "⌄" : "›"} SRV-01</button>{level >= 1 && <button aria-label="Forward Lookup Zones" aria-expanded={level >= 2} onClick={() => setDraft("level", level >= 2 ? "1" : "2")}>{level >= 2 ? "⌄" : "›"} Forward Lookup Zones</button>}{level >= 2 && <button aria-current={level >= 3 ? "page" : undefined} onClick={() => setDraft("level", "3")}>lab.test</button>}</aside><div className="wd-content"><div className="wd-toolbar"><h3>{level >= 3 ? "lab.test" : "DNS Manager"}</h3><span className={"wd-status " + (!s.dns.running || !s.roles.dns ? "is-stopped" : "")}>{!s.roles.dns ? "Role chưa cài" : s.dns.running ? "DNS Running" : "DNS Stopped"}</span></div>{level < 3 ? <p>Mở SRV-01 → Forward Lookup Zones → lab.test trong cây bên trái để xem bản ghi.</p> : <><div className="wd-table"><table><thead><tr><th>Name</th><th>Type</th><th>Data</th></tr></thead><tbody><tr aria-selected={selected} onDoubleClick={() => s.roles.dns && properties()}><td><button disabled={!s.roles.dns} onClick={() => setSelected(true)}>portal</button></td><td>Host (A)</td><td>{s.dns.record || "Chưa tạo"}</td></tr></tbody></table></div><div className="wd-toolbar"><button disabled={!selected || !s.roles.dns} data-scenario-target={guideRecord && !editing ? "target" : undefined} aria-describedby={guideRecord && !editing ? "scenario-guide-target" : undefined} className={guideRecord && !editing ? "sl-guide-focus" : ""} onClick={properties}>Properties</button></div><p>Chọn portal rồi Properties, hoặc nhấp đúp dòng bản ghi để mở thuộc tính.</p></>}</div></div>{editing && <Dialog labelId="dns-record-properties-title" onClose={() => setEditing(false)}><form className="wd-form wd-properties-dialog" onSubmit={save}><h2 id="dns-record-properties-title">portal Properties</h2><span className="wd-properties-tab">Host (A)</span><label>Fully qualified domain name<input value="portal.lab.test" readOnly /></label><label>IPv4 address<input aria-label="IPv4 address" value={window.draft.address ?? ""} onChange={(event) => setDraft("address", event.target.value)} required maxLength={15} spellCheck={false} autoFocus /></label><p>Apply lưu bản ghi trên SRV-01. Sau đó chạy lại nslookup từ CLIENT-01.</p><div className="modal-actions"><button type="button" onClick={() => setEditing(false)}>Cancel</button><button type="submit" data-scenario-target="target" aria-describedby="scenario-guide-target" className="sl-guide-focus" disabled={busy || !s.roles.dns}>Apply</button><button type="button" disabled={busy || !s.roles.dns} onClick={async () => { await act({ type: "dns.record", address: window.draft.address ?? "" }); if (!useSystemLab.getState().error) setEditing(false); }}>OK</button></div></form></Dialog>}</>;
 }
 
 function NetworkProperties({ window, setDraft }: AppProps) {
@@ -147,13 +159,14 @@ export function DeviceDesktop({ active, guideStep = "idle", focusRequest = 0, fe
   const { state, busy } = useSystemLab();
   const [desktop, dispatch] = useReducer(reduceDesktopState, undefined, () => createDesktopState());
   const [start, setStart] = useState(false);
+  const [windowFocusTick, setWindowFocusTick] = useState(0);
   const shell = useRef<HTMLDivElement>(null);
   const previousGuide = useRef("");
   const desktopRef = useRef<HTMLDivElement>(null);
   const device = desktop.selectedDevice;
   const current = desktop.devices[device];
   const s = state!;
-  function open(app: DeviceDesktopApp) { dispatch({ type: "open", device, app }); setStart(false); }
+  function open(app: DeviceDesktopApp) { dispatch({ type: "open", device, app }); setStart(false); setWindowFocusTick((value) => value + 1); }
   useEffect(() => {
     const scenarioActive = Boolean(scenarioApp && scenarioDevice);
     if (!active || (!scenarioActive && (guideStep === "idle" || guideStep === "complete"))) return;
@@ -177,12 +190,20 @@ export function DeviceDesktop({ active, guideStep = "idle", focusRequest = 0, fe
   useEffect(() => {
     const scenarioActive = Boolean(scenarioApp && scenarioDevice);
     if (!active || (!scenarioActive && (guideStep === "idle" || guideStep === "complete"))) { previousGuide.current = ""; return; }
-    const target = shell.current?.querySelector<HTMLElement>('[data-desktop-guide="target"]:not([disabled]), [data-scenario-target="target"]:not([disabled])');
-    if (target && !target.closest("[hidden]")) {
+    const focusTarget = () => {
+      const target = shell.current?.querySelector<HTMLElement>('[data-desktop-guide="target"]:not([disabled]), [data-scenario-target="target"]:not([disabled])');
+      if (!target || target.closest("[hidden]")) return;
       target.focus({ preventScroll: true });
       target.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-    }
-  }, [active, guideStep, focusRequest, device, current.activeApp, scenarioApp, scenarioDevice, scenarioTarget]);
+    };
+    // Opening a desktop app updates the reducer after this effect has run.
+    // Retry on the next frame and once more after the input receives its draft
+    // command so guided launches from the home page keep keyboard focus.
+    focusTarget();
+    const frame = window.requestAnimationFrame(focusTarget);
+    const timer = window.setTimeout(focusTarget, 0);
+    return () => { window.cancelAnimationFrame(frame); window.clearTimeout(timer); };
+  }, [active, guideStep, focusRequest, device, current.activeApp, scenarioApp, scenarioDevice, scenarioTarget, windowFocusTick]);
   useEffect(() => {
     if (!active || (guideStep !== "idle" && guideStep !== "complete")) return;
     const target = shell.current?.querySelector<HTMLElement>(".wd-window:not([hidden])") ?? desktopRef.current;

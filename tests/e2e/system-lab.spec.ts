@@ -57,6 +57,36 @@ test("home selects the DNS simulation and starts its guided actions", async ({ p
   await expect(command).toBeFocused();
 });
 
+test("DNS A-record guide focuses the real desktop repair and requires fresh verification", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "Chọn nhóm DNS / DHCP", exact: true }).click();
+  await page.getByRole("article").filter({ has: page.getByRole("heading", { name: "Tên website trả về đích khác", exact: true }) }).getByRole("link", { name: "Có hướng dẫn", exact: true }).click();
+  await expect(page).toHaveURL(/\/system\?preset=dns-record&workspace=desktop&guide=dns-record/);
+  await expect(page.getByTestId("system-ready")).toBeVisible();
+  await expect(page.getByText("Bước 1/5 · Kiểm tra kết nối IP", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Chọn máy trạm CLIENT-01", exact: true }).click();
+  await page.getByRole("button", { name: "Mở PowerShell", exact: true }).click();
+  const command = page.getByRole("textbox", { name: "Lệnh trên CLIENT-01", exact: true });
+  await expect(command).toHaveValue("ping 192.168.10.10");
+  await page.getByRole("button", { name: "Chạy", exact: true }).click();
+  await expect(command).toHaveValue("nslookup portal.lab.test");
+  await page.getByRole("button", { name: "Chạy", exact: true }).click();
+
+  await expect(page.getByText("Bước 3/5 · Cập nhật bản ghi portal", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "DNS Manager · SRV-01", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Properties", exact: true }).click();
+  const properties = page.getByRole("dialog", { name: "portal Properties", exact: true });
+  await properties.getByRole("textbox", { name: "IPv4 address", exact: true }).fill("192.168.10.10");
+  await properties.getByRole("button", { name: "Apply", exact: true }).click();
+
+  await expect(command).toHaveValue("nslookup portal.lab.test");
+  await page.getByRole("button", { name: "Chạy", exact: true }).click();
+  await expect(command).toHaveValue("curl http://portal.lab.test");
+  await page.getByRole("button", { name: "Chạy", exact: true }).click();
+  await expect(page.getByText("Đã hoàn thành hướng dẫn DNS · Bản ghi A", { exact: true })).toBeVisible();
+});
+
 test("portal flow visualizes a DNS interruption and updates after the service is restored", async ({ page }) => {
   await openLab(page);
   await newSession(page, "dns-stopped");

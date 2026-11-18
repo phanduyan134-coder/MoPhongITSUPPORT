@@ -1,16 +1,17 @@
 import { test, expect, type Locator, type Page } from "@playwright/test";
 
 const simulations = [
-  { title: "Không phân giải được tên nội bộ", href: "/system?preset=dns-stopped&guide=dns", topic: /DNS|phân giải/ },
-  { title: "Máy trạm chưa nhận địa chỉ", href: "/system?preset=dhcp-stopped&guide=dhcp", topic: /DHCP|địa chỉ IP/ },
-  { title: "Website trả về HTTP 503", href: "/system?preset=iis-pool&guide=iis", topic: /IIS|website/ },
-  { title: "Truy cập LAN nhưng không đến mạng khác", href: "/system?preset=network-gateway&guide=gateway", topic: /gateway|mạng khác/i },
-  { title: "Không ghi được dữ liệu", href: "/system?preset=disk-full&guide=disk", topic: /dung lượng|ổ dữ liệu/ },
+  { title: "DNS / DHCP", scenarioTitle: "Không phân giải được tên nội bộ", href: "/system?preset=dns-stopped&workspace=desktop&guide=dns", topic: /DNS|phân giải/ },
+  { title: "Web Server IIS", scenarioTitle: "Website trả về HTTP 503", href: "/system?preset=iis-pool&workspace=desktop&guide=iis", topic: /IIS|website/ },
+  { title: "Kết nối mạng", scenarioTitle: "Truy cập LAN nhưng không đến mạng khác", href: "/system?preset=network-gateway&workspace=desktop&guide=gateway", topic: /gateway|mạng khác/i },
+  { title: "Windows Server", scenarioTitle: "Không ghi được dữ liệu", href: "/system?preset=disk-full&workspace=desktop&guide=disk", topic: /dung lượng|ổ dữ liệu/ },
 ] as const;
 
-const cardFor = (page: Page, title: string) => page.locator("article.sh-card")
+const cardFor = (page: Page, title: string) => page.locator("article.sh-group-card")
   .filter({ has: page.getByRole("heading", { name: title, exact: true }) });
-const infoFor = (page: Page, title: string) => page.getByRole("button", { name: `Thông tin mô phỏng: ${title}`, exact: true });
+const infoFor = (page: Page, title: string) => page.getByRole("button", { name: `Thông tin nhóm: ${title}`, exact: true });
+const scenarioFor = (page: Page, title: string) => page.locator("article.sh-scenario")
+  .filter({ has: page.getByRole("heading", { name: title, exact: true }) });
 
 async function tabTo(page: Page, target: Locator) {
   for (let i = 0; i < 20; i++) {
@@ -34,13 +35,15 @@ async function expectWithinViewport(page: Page, tooltip: Locator) {
 
 test("each simulation exposes an information button without changing its launch link", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("article.sh-card")).toHaveCount(5);
+  await expect(page.locator("article.sh-group-card")).toHaveCount(4);
   await expect(page.getByRole("tooltip")).toHaveCount(0);
   for (const simulation of simulations) {
     const card = cardFor(page, simulation.title);
     await expect(infoFor(page, simulation.title)).toBeVisible();
     await expect(infoFor(page, simulation.title)).toHaveAttribute("aria-expanded", "false");
-    await expect(card.getByRole("link", { name: "Bắt đầu có hướng dẫn", exact: true })).toHaveAttribute("href", simulation.href);
+    await page.getByRole("button", { name: `Chọn nhóm ${simulation.title}`, exact: true }).click();
+    await expect(scenarioFor(page, simulation.scenarioTitle).getByRole("link", { name: "Có hướng dẫn", exact: true })).toHaveAttribute("href", simulation.href);
+    await expect(card).toBeVisible();
   }
 });
 
@@ -93,16 +96,16 @@ test("keyboard focus describes the information button and launch link, and suppo
   const tooltipId = await tooltip.getAttribute("id");
   expect(tooltipId).toBeTruthy();
   await expect(info).toHaveAttribute("aria-describedby", tooltipId!);
-  const launch = cardFor(page, simulations[0].title).getByRole("link", { name: "Bắt đầu có hướng dẫn", exact: true });
-  await tabTo(page, launch);
+  const group = cardFor(page, simulations[0].title).getByRole("button", { name: `Chọn nhóm ${simulations[0].title}`, exact: true });
+  await tabTo(page, group);
   await expect(tooltip).toBeVisible();
-  await expect(launch).toHaveAttribute("aria-describedby", tooltipId!);
+  await expect(group).toHaveAttribute("aria-describedby", tooltipId!);
   await page.keyboard.press("Escape");
   await expect(tooltip).toHaveCount(0);
-  await expect(launch).not.toHaveAttribute("aria-describedby", /.+/);
+  await expect(group).not.toHaveAttribute("aria-describedby", /.+/);
   await page.waitForTimeout(350);
   await expect(tooltip).toHaveCount(0);
-  await expect(launch).toBeFocused();
+  await expect(group).toBeFocused();
 });
 
 test("information clicks toggle the description and outside clicks close it without launching", async ({ page }) => {
@@ -117,7 +120,7 @@ test("information clicks toggle the description and outside clicks close it with
   await expect(page.getByRole("tooltip")).toHaveCount(0);
   await info.click();
   await expect(page.getByRole("tooltip")).toBeVisible();
-  await page.getByRole("heading", { name: "Bạn muốn xử lý tình huống nào?", exact: true }).click();
+  await page.getByRole("heading", { name: /Bạn muốn mô phỏng/ }).click();
   await expect(info).toHaveAttribute("aria-expanded", "false");
   await expect(page.getByRole("tooltip")).toHaveCount(0);
   await expect(page).toHaveURL("/");

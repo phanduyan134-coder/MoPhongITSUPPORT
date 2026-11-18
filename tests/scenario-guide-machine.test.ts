@@ -25,6 +25,23 @@ function assertStep(actor: GuideActor, id: string) {
   assert.equal(getScenarioGuideStep(actor.getSnapshot().context)?.id, id);
 }
 
+test("DNS record guidance distinguishes a wrong A answer and focuses DNS Manager repair", () => {
+  const actor = startGuide("dns-record");
+  let state = createSimulation("dns-record");
+  diagnostic(actor, state, "ping 192.168.10.10");
+  diagnostic(actor, state, "nslookup portal.lab.test");
+  assertStep(actor, "dns-record-repair");
+  assert.equal(getScenarioGuideStep(actor.getSnapshot().context)?.target, "dns-record");
+  state = applySimulationAction(state, { type: "dns.record", address: "192.168.10.10" }).state;
+  changed(actor, state);
+  assertStep(actor, "dns-record-verify-answer");
+  diagnostic(actor, state, "nslookup portal.lab.test");
+  assertStep(actor, "dns-record-verify-http");
+  diagnostic(actor, state, "curl http://portal.lab.test");
+  assert.equal(actor.getSnapshot().value, "complete");
+  actor.stop();
+});
+
 test("four guided scenarios expose distinct presets, explicit targets and beginner explanations", () => {
   const ids = new Set<string>();
   for (const guide of Object.values(scenarioGuides)) {
@@ -183,6 +200,24 @@ test("gateway route step needs the correct destination and a working LAN path", 
   diagnostic(actor, state, "ping 192.168.20.10");
   assertStep(actor, "gateway-inspect-options");
   actor.stop();
+});
+
+test("gateway route step accepts either a timeout or a successful response from the exact different-network target", () => {
+  const timeoutActor = startGuide("gateway");
+  const brokenGateway = createSimulation("network-gateway");
+  diagnostic(timeoutActor, brokenGateway, "ipconfig /all");
+  diagnostic(timeoutActor, brokenGateway, "ping 192.168.10.10");
+  diagnostic(timeoutActor, brokenGateway, "ping 192.168.20.10");
+  assertStep(timeoutActor, "gateway-inspect-options");
+  timeoutActor.stop();
+
+  const successActor = startGuide("gateway");
+  const healthy = createSimulation();
+  diagnostic(successActor, healthy, "ipconfig /all");
+  diagnostic(successActor, healthy, "ping 192.168.10.10");
+  diagnostic(successActor, healthy, "ping 192.168.20.10");
+  assertStep(successActor, "gateway-inspect-options");
+  successActor.stop();
 });
 
 test("gateway options check rejects wrong devices, wrong DHCP options and a static client", () => {

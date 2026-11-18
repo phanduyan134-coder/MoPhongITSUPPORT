@@ -11,7 +11,7 @@ type SimulationGroup = { id: string; title: string; icon: LucideIcon; summary: s
 const groups: SimulationGroup[] = [
   { id: "dns-dhcp", title: "DNS / DHCP", icon: Server, summary: "Phân giải tên và cấp cấu hình mạng cho máy trạm.", meaningTitle: "DNS / DHCP · Hai dịch vụ mạng khác nhau", meaning: "DNS trả lời địa chỉ IP ứng với một tên như portal.lab.test. DHCP cấp IP, gateway và địa chỉ DNS cho máy trạm. Bạn có thể cấu hình từng dịch vụ rồi kiểm tra từ phía máy sử dụng.", scenarios: [
     { preset: "dns-stopped", title: "Không phân giải được tên nội bộ", summary: "CLIENT-01 vẫn tới được SRV-01 bằng IP, nhưng không mở được portal.lab.test.", tools: "PowerShell · Services · Trình duyệt", guide: "dns" },
-    { preset: "dns-record", title: "Tên website trả về đích khác", summary: "Máy trạm nhận được câu trả lời DNS, nhưng địa chỉ trả về chưa dẫn tới website nội bộ.", tools: "DNS Manager · PowerShell · Trình duyệt" },
+    { preset: "dns-record", title: "Tên website trả về đích khác", summary: "Máy trạm nhận được câu trả lời DNS, nhưng địa chỉ trả về chưa dẫn tới website nội bộ.", tools: "DNS Manager · PowerShell · Trình duyệt", guide: "dns-record" },
     { preset: "dhcp-stopped", title: "Máy trạm chưa nhận địa chỉ", summary: "Máy trạm đang dùng địa chỉ tự gán và chưa nhận được cấu hình từ DHCP.", tools: "Services · DHCP · Cấu hình mạng", guide: "dhcp" },
     { preset: "unconfigured", title: "Cấu hình máy chủ mới", summary: "Bắt đầu với máy chủ chưa cài role và tự xây dựng dịch vụ mạng cần dùng.", tools: "Server Manager · DNS Manager · Cấu hình mạng" },
   ] },

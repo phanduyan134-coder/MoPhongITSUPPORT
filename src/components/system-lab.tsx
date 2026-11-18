@@ -205,6 +205,7 @@ export function SystemLab({ initialPreset = "healthy", initialGuide = "", initia
   }
   const immersiveScenarioApp = scenarioStep?.target === "dhcp-running" ? "dhcp-manager" as const
     : scenarioStep?.target === "iis-pool" ? "iis-manager" as const
+      : scenarioStep?.target === "dns-record" ? "dns-manager" as const
       : scenarioStep?.target === "disk-cleanup" || scenarioStep?.target === "disk-write" ? "files" as const
         : scenarioStep?.view === "network" ? "network" as const
           : scenarioStep?.view === "terminal" ? "terminal" as const : undefined;
